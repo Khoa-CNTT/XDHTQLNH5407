@@ -1,24 +1,20 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+// import HelloWorld from './components/HelloWorld.vue'
 </script>
 <template>
-  <h1 class="text-3xl font-bold underline">
-    Hello world!
-  </h1>
+  <component :is="layout">
+    <router-view></router-view>
+  </component>
 </template>
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
+<script>
+const default_layout = "default";
+export default {
+  computed: {
+    layout() {
+      return (this.$route.meta.layout || default_layout) + "-layout";
+    },
+  },
+};
+</script>
+<style></style>
