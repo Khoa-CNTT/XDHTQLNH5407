@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create("customers", function (Blueprint $table) {
             $table->id();
-            $table->string("std");
+            $table->string("phoneNumber");
             $table->string("FullName");
+            $table->string("image")->nullable();
             $table->string("otp")->nullable();
             $table->integer("point")->default(0);
             $table->integer("id_rank");

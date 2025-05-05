@@ -3,63 +3,93 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ingredient;
+use App\Http\Requests\IngredientRequest;
 use Illuminate\Http\Request;
 
 class IngredientController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Lấy danh sách tất cả nguyên liệu
+    public function getData()
     {
-        //
+        $ingredients = Ingredient::all();
+
+        return response()->json([
+            'status' => 1,
+            'data' => $ingredients
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Thêm mới nguyên liệu
+    public function store(IngredientRequest $request)
     {
-        //
+        $ingredient = Ingredient::create([
+            'name_ingredient' => $request->name_ingredient,
+            'image'           => $request->image,
+        ]);
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Thêm nguyên liệu thành công.',
+            'data' => $ingredient
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    // Cập nhật nguyên liệu theo ID
+    public function update(IngredientRequest $request, $id)
     {
-        //
+        $ingredient = Ingredient::find($id);
+
+        if (!$ingredient) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Nguyên liệu không tồn tại.'
+            ]);
+        }
+
+        $ingredient->update([
+            'name_ingredient' => $request->name_ingredient,
+            'image'           => $request->image,
+        ]);
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Cập nhật nguyên liệu thành công.',
+            'data' => $ingredient
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Ingredient $ingredient)
+    // Xóa nguyên liệu theo ID
+    public function destroy($id)
     {
-        //
+        $ingredient = Ingredient::find($id);
+
+        if (!$ingredient) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Nguyên liệu không tồn tại.'
+            ]);
+        }
+
+        $ingredient->delete();
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Xóa nguyên liệu thành công.'
+        ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Ingredient $ingredient)
+    // Tìm kiếm nguyên liệu theo tên
+    public function search(Request $request)
     {
-        //
-    }
+        $keyword = $request->keyword;
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Ingredient $ingredient)
-    {
-        //
-    }
+        $ingredients = Ingredient::when($keyword, function ($query, $keyword) {
+            return $query->where('name_ingredient', 'like', '%' . $keyword . '%');
+        })->get();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Ingredient $ingredient)
-    {
-        //
+        return response()->json([
+            'status' => 1,
+            'data' => $ingredients
+        ]);
     }
 }

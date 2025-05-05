@@ -3,63 +3,93 @@
 namespace App\Http\Controllers;
 
 use App\Models\Warehouse;
+use App\Http\Requests\WarehouseRequest;
 use Illuminate\Http\Request;
 
 class WarehouseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Lấy danh sách kho
+    public function getData()
     {
-        //
+        $warehouses = Warehouse::all();
+
+        return response()->json([
+            'status' => 1,
+            'data' => $warehouses
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Thêm mới kho
+    public function store(WarehouseRequest $request)
     {
-        //
+        $warehouse = Warehouse::create([
+            'id_ingredient' => $request->id_ingredient,
+            'quantity'      => $request->quantity,
+        ]);
+
+        return response()->json([
+            'status'  => 1,
+            'message' => 'Thêm mới kho thành công.',
+            'data'    => $warehouse
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    // Cập nhật kho
+    public function update(WarehouseRequest $request, $id)
     {
-        //
+        $warehouse = Warehouse::find($id);
+
+        if (!$warehouse) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Kho không tồn tại.'
+            ]);
+        }
+
+        $warehouse->update([
+            'id_ingredient' => $request->id_ingredient,
+            'quantity'      => $request->quantity,
+        ]);
+
+        return response()->json([
+            'status'  => 1,
+            'message' => 'Cập nhật kho thành công.',
+            'data'    => $warehouse
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Warehouse $warehouse)
+    // Xóa kho
+    public function destroy($id)
     {
-        //
+        $warehouse = Warehouse::find($id);
+
+        if (!$warehouse) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Kho không tồn tại.'
+            ]);
+        }
+
+        $warehouse->delete();
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Xóa kho thành công.'
+        ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Warehouse $warehouse)
+    // Tìm kiếm kho theo ID nguyên liệu
+    public function search(Request $request)
     {
-        //
-    }
+        $keyword = $request->keyword;
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Warehouse $warehouse)
-    {
-        //
-    }
+        $warehouses = Warehouse::when($keyword, function ($query, $keyword) {
+            return $query->where('id_ingredient', 'like', '%' . $keyword . '%');
+        })->get();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Warehouse $warehouse)
-    {
-        //
+        return response()->json([
+            'status' => 1,
+            'data' => $warehouses
+        ]);
     }
 }

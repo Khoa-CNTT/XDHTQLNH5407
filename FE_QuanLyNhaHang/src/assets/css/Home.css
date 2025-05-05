@@ -1,0 +1,93 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+}
+
+.background {
+    width: 100%;
+    min-height: 100%;
+    background-image: url('https://mikazuki.com.vn/vnt_upload/culinary/09_2024/c94793cf_13f3_481d_ba0d_ac7773a785b8.jpeg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 50px 0;
+}
+
+.menu-card {
+    background: white;
+}
+
+.menu-container {
+    background: white;
+}
+
+.text {
+    color: white;
+    font-weight: bold;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+    margin-left: 40px;
+}
+
+.title p {
+    text-align: center;
+    font-size: 2rem;
+}
+
+.title {
+    background: white;
+}
+
+.introduce {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+
+}
+
+.introduce p {
+    font-size: 30px;
+    font-weight: bold;
+
+
+}
+
+.introduce img {
+    height: 50px;
+    margin-right: 10px;
+}
+
+.content {
+    width: 100%;
+
+    padding: 50px;
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+.content p{
+    font-size: 25px;
+    color: black;
+}
+
+.content .col-left {
+    flex: 40%;
+    background: #f0f0f0;
+    padding: 20px;
+    text-align: center;
+}
+
+.content .col-right {
+    flex: 60%;
+    padding: 20px;
+    text-align: center;
+}

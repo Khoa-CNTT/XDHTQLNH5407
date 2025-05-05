@@ -2,64 +2,77 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Review_Management;
+use App\Models\ReviewManagement;
 use Illuminate\Http\Request;
+use App\Http\Requests\ReviewManagementRequest;
 
 class ReviewManagementController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Lấy danh sách tất cả bình luận
+    public function getData()
     {
-        //
+        $reviews = ReviewManagement::all();
+        return response()->json($reviews);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Thêm bình luận
+    public function store(ReviewManagementRequest $request)
     {
-        //
+        $review = ReviewManagement::create([
+            'id_rate' => $request->id_rate,
+            'id_user' => $request->id_user,
+            'comment' => $request->comment,
+        ]);
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Thêm bình luận thành công.',
+            'data' => $review
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    // Cập nhật bình luận
+    public function update(ReviewManagementRequest $request)
     {
-        //
+        $review = ReviewManagement::find($request->id);
+
+        if (!$review) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Không tìm thấy bình luận.'
+            ]);
+        }
+
+        $review->update([
+            'id_rate' => $request->id_rate,
+            'id_user' => $request->id_user,
+            'comment' => $request->comment,
+        ]);
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Cập nhật bình luận thành công.',
+            'data' => $review
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Review_Management $review_Management)
+    // Xóa bình luận
+    public function destroy(Request $request)
     {
-        //
-    }
+        $review = ReviewManagement::find($request->id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Review_Management $review_Management)
-    {
-        //
-    }
+        if (!$review) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Không tìm thấy bình luận.'
+            ]);
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Review_Management $review_Management)
-    {
-        //
-    }
+        $review->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Review_Management $review_Management)
-    {
-        //
+        return response()->json([
+            'status' => 1,
+            'message' => 'Xóa bình luận thành công.'
+        ]);
     }
 }

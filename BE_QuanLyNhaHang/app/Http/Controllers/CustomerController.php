@@ -9,15 +9,21 @@ class CustomerController extends Controller
 {
     public function index()
     {
-        $customers = Customer::all();
-        return response()->json([
-            "customers" => $customers
-        ]);
-    }
+        try {
+            $customers = Customer::with(['rank:id,nameRank,necessaryPoint,saleRank'])->get();
+            return response()->json([
+                "customers" => $customers
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                "error" => $e->getMessage()
+            ], 500);
+        }
+    }    
     public function store(Request $request)
     {
         $customer = new Customer();
-        $customer->std = $request->std;
+        $customer->phoneNumber = $request->phoneNumber;
         $customer->FullName = $request->FullName;
         $customer->otp = $request->otp;
         $customer->point = $request->point ?? 0; // Mặc định là 0 nếu không có giá trị
@@ -56,7 +62,7 @@ class CustomerController extends Controller
         }
 
         // Cập nhật dữ liệu từ request
-        $customer->std = $request->std ?? $customer->std;
+        $customer->phoneNumber = $request->phoneNumber ?? $customer->phoneNumber;
         $customer->FullName = $request->FullName ?? $customer->FullName;
         $customer->otp = $request->otp ?? $customer->otp;
         $customer->point = $request->point ?? $customer->point;
@@ -71,20 +77,19 @@ class CustomerController extends Controller
         ], 200);
     }
     public function delete($id)
-{
-    $customer = Customer::find($id);
+    {
+        $customer = Customer::find($id);
 
-    if (!$customer) {
+        if (!$customer) {
+            return response()->json([
+                'message' => 'Customer not found'
+            ], 404);
+        }
+
+        $customer->delete();
+
         return response()->json([
-            'message' => 'Customer not found'
-        ], 404);
+            'message' => 'Customer deleted successfully'
+        ], 200);
     }
-
-    $customer->delete();
-
-    return response()->json([
-        'message' => 'Customer deleted successfully'
-    ], 200);
-}
-
 }

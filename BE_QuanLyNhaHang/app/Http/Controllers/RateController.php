@@ -4,62 +4,79 @@ namespace App\Http\Controllers;
 
 use App\Models\Rate;
 use Illuminate\Http\Request;
+use App\Http\Requests\RateRequest;
 
 class RateController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // Lấy danh sách đánh giá
+    public function getData()
     {
-        //
+        $rates = Rate::all();
+
+        return response()->json([
+            'status' => 1,
+            'data' => $rates
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Thêm đánh giá mới
+    public function store(RateRequest $request)
     {
-        //
+        $rate = Rate::create([
+            'id_food' => $request->id_food,
+            'star'    => $request->star,
+            'detail'  => $request->detail,
+        ]);
+
+        return response()->json([
+            'status'  => 1,
+            'message' => 'Đánh giá đã được thêm thành công.',
+            'data'    => $rate
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    // Cập nhật đánh giá theo ID
+    public function update(RateRequest $request, $id)
     {
-        //
+        $rate = Rate::find($id);
+
+        if (!$rate) {
+            return response()->json([
+                'status'  => 0,
+                'message' => 'Không tìm thấy đánh giá.'
+            ]);
+        }
+
+        $rate->update([
+            'id_food' => $request->id_food,
+            'star'    => $request->star,
+            'detail'  => $request->detail,
+        ]);
+
+        return response()->json([
+            'status'  => 1,
+            'message' => 'Đánh giá đã được cập nhật.',
+            'data'    => $rate
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Rate $rate)
+    // Xóa đánh giá theo ID
+    public function destroy($id)
     {
-        //
-    }
+        $rate = Rate::find($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Rate $rate)
-    {
-        //
-    }
+        if (!$rate) {
+            return response()->json([
+                'status'  => 0,
+                'message' => 'Không tìm thấy đánh giá.'
+            ]);
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Rate $rate)
-    {
-        //
-    }
+        $rate->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Rate $rate)
-    {
-        //
+        return response()->json([
+            'status'  => 1,
+            'message' => 'Đánh giá đã được xóa.'
+        ]);
     }
 }

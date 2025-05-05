@@ -1,0 +1,154 @@
+body {
+    background-image: url('https://mikazuki.com.vn/vnt_upload/culinary/09_2024/c94793cf_13f3_481d_ba0d_ac7773a785b8.jpeg');
+    background-size: cover;
+  }
+  
+  .navbar {
+    background: rgba(169, 226, 202, 0.7);
+    width: 100%;
+  }
+  .menu li.introduce:hover{
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  .menu li a:hover {
+  }
+  .menu li a{
+    width: 100%;
+    display: block; /* hoặc inline-block nếu muốn giữ trên 1 dòng */
+    width: 100%; 
+  }
+  
+  .header {
+    position: relative;
+    justify-content: space-between;
+  
+  }
+  
+  .logo {
+    align-items: center;
+    display: flex;
+  
+  }
+  
+  .logo img {
+    height: 50px;
+  
+  }
+
+  .menu {
+    display: flex;
+  
+  }
+
+  .menu li {
+    display: inline-block;
+    padding: 10px 10px;
+  }
+  
+  .name-menu .row {
+    width: 100%;
+    display: flex;
+    width: 300px;
+  }
+  
+  .name-menu .col-6 {
+    flex: 1;
+    padding: 10px;
+  }
+  
+  .name-menu {
+    display: none;
+    position: absolute;
+    background: #C0C0C0;
+    margin-right: 300px;
+    width: 800px;
+    transform: translateX(-20%);
+    margin-top: 16px;
+  }
+  .menu-row {
+    display: flex;
+    justify-content: space-between; 
+    align-items: flex-start; 
+  }
+  
+ 
+  .menu-image {
+    width: 30%;
+    display: flex;
+    justify-content: center;
+    height: 250px;
+    margin-top: 60px;
+    padding-right: 30px;
+  }
+  
+  .menu-image img {
+    width: 100%;
+    max-width: 250px; 
+  }
+  
+  .name-menu .row-menu {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .name-menu .col-6 {
+    width: 48%; 
+  }
+  
+  .menu .servicefood:hover>.name-menu {
+    display: block;
+  }
+  
+  .title-header {
+    font-size: 1.1rem;
+    font-weight: bold;
+  
+  }
+  
+  .menu .introduce:hover>.name-menu {
+    display: block;
+  }
+  .search-container {
+    position: relative;
+    display: inline-block;
+  }
+  
+  /* Khi hover container thì hiển thị search card */
+  .search-container:hover .search-card {
+    display: block;
+  }
+  
+  .search-card {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    display: none;
+    z-index: 10;
+    width: 400px;
+    height: 100px;
+    transform: translateX(20px); 
+
+  }
+  .search-card input{
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    margin-top: 10px;
+  }
+  /* .search-icon {
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background 0.3s;
+  }
+  
+  .search-icon:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  } */
+  
