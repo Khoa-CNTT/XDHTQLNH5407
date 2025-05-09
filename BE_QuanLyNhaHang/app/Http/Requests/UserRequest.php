@@ -14,12 +14,12 @@ class UserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image'           => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'image'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'name'           => 'required|string|min:3|max:100',
             'role'           => 'required|string|in:admin,user,staff',
-            'phone_number'   => 'required|string|regex:/^0[0-9]{9}$/|unique:users,phone_number,' . $this->id,
-            'email'          => 'required|email|unique:users,email,' . $this->id,
-            'status'         => 'required|in:active,inactive',
+            'phone_number'   => 'required|string|regex:/^0[0-9]{9}$/|unique:users,phone_number,' . $this->route('id', '0'),
+            'email'          => 'required|email|unique:users,email,' . $this->route('id', '0'),
+            'status'         => 'required|in:active,inactive,banned',
             'birth'          => 'required|date|before:today',
             'password'       => 'required|min:6|max:50',
         ];
@@ -28,7 +28,6 @@ class UserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'image.required'         => 'Phải chọn ảnh.',
             'image.image'            => 'File tải lên phải là hình ảnh.',
             'image.mimes'            => 'Ảnh phải có định dạng jpg, jpeg hoặc png.',
             'image.max'              => 'Ảnh không được lớn hơn 2MB.',

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -15,17 +16,21 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             RateSeeder::class,
             ReviewManagementSeeder::class,
-
             RankSeeder::class,
             CategorySeeder::class,
+            CategoryFoodSeeder::class,
             CustomerSeeder::class,
             HistoryPointSeeder::class,
             BookingSeeder::class,
             InvoiceSeeder::class,
+            SaleFoodSeeder::class,
+            SaleSeeder::class,
             FoodSeeder::class,
-            TypeSeeder::class,
             TablesSeeder::class,
+            TypeSeeder::class,
+            CartSeeder::class,
+            BookingFoodsSeeder::class,
+            InvoiceFoodSeeder::class
         ]);
     }
-
 }

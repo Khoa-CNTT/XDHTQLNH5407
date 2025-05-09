@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BoongkingFoodController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CategoryFoodController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HistoryPointController;
 use App\Http\Controllers\IngredientController;
@@ -15,6 +17,15 @@ use App\Http\Controllers\ReviewManagementController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\WarehouseInvoiceController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\FoodController;
+use App\Http\Controllers\InvoiceFoodController;
+use App\Http\Controllers\MailController;
+use App\Http\Controllers\SaleController;
+use App\Http\Controllers\SaleFoodController;
+use App\Http\Controllers\TableController;
+use App\Http\Controllers\TypeController;
+use App\Models\Rate;
 
 // Route mặc định
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -24,10 +35,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Nhóm route cho ADMIN
 Route::prefix('admin')->group(function () {
     Route::prefix('customers')->group(function () {
+        Route::post('/register', [CustomerController::class, 'register']);
         Route::get('/', [CustomerController::class, 'index']);
         Route::post('/create', [CustomerController::class, 'store']);
         Route::get('/{id}', [CustomerController::class, 'show']);
-        Route::put('/{id}', [CustomerController::class, 'update']);
+        Route::put('/update/{id}', [CustomerController::class, 'update']);
         Route::delete('/{id}', [CustomerController::class, 'delete']);
     });
 
@@ -55,6 +67,14 @@ Route::prefix('admin')->group(function () {
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
     });
 
+    Route::prefix('category-foods')->group(function () {
+        Route::get('/', [CategoryFoodController::class, 'getData']);
+        Route::post('/create', [CategoryFoodController::class, 'store']);
+        Route::get('/{id}', [CategoryFoodController::class, 'findById']);
+        Route::put('/{id}', [CategoryFoodController::class, 'update']);
+        Route::delete('/{id}', [CategoryFoodController::class, 'destroy']);
+    });
+
     Route::prefix('history-points')->group(function () {
         Route::get('/', [HistoryPointController::class, 'index']);
         Route::post('/create', [HistoryPointController::class, 'store']);
@@ -73,41 +93,61 @@ Route::prefix('admin')->group(function () {
 
     Route::prefix('ingredients')->group(function () {
         Route::get('/', [IngredientController::class, 'getData']);
-        Route::get('/{id}', [IngredientController::class, 'getById']);
-        Route::post('/', [IngredientController::class, 'store']);
-        Route::put('/{id}', [IngredientController::class, 'update']);
-        Route::delete('/{id}', [IngredientController::class, 'destroy']);
+        Route::post('/create', [IngredientController::class, 'store']);
+        Route::get('/show/{id}', [IngredientController::class, 'getById']);
+        Route::put('/update/{id}', [IngredientController::class, 'update']);
+        Route::delete('/delete/{id}', [IngredientController::class, 'destroy']);
     });
 
     Route::prefix('warehouses')->group(function () {
-        Route::get('/', [WarehouseController::class, 'getData']);
-        Route::post('/', [WarehouseController::class, 'store']);
-        Route::put('/{id}', [WarehouseController::class, 'update']);
-        Route::delete('/{id}', [WarehouseController::class, 'destroy']);
+        Route::get('/',                         [WarehouseController::class, 'getData']);
+        Route::post('/create',                  [WarehouseController::class, 'store']);
+        Route::get('/show/{id}',                [WarehouseController::class, 'show']);
+        Route::put('/update/{id}',              [WarehouseController::class, 'update']);
+        Route::delete('/delete/{id}',           [WarehouseController::class, 'destroy']);
+    });
+
+    Route::prefix('rates')->group(function () {
+        Route::get('/',                         [RateController::class, 'getData']);
+        Route::post('/create',                  [RateController::class, 'store']);
+        Route::get('/show/{id}',                [RateController::class, 'show']);
+        Route::put('/update/{id}',              [RateController::class, 'update']);
+        Route::delete('/delete/{id}',           [RateController::class, 'destroy']);
     });
 
     Route::prefix('warehouse-invoices')->group(function () {
-        Route::get('/', [WarehouseInvoiceController::class, 'getData']);
-        Route::post('/', [WarehouseInvoiceController::class, 'store']);
-        Route::put('/{id}', [WarehouseInvoiceController::class, 'update']);
-        Route::delete('/{id}', [WarehouseInvoiceController::class, 'destroy']);
-        Route::get('/search', [WarehouseInvoiceController::class, 'search']);
+        Route::get('/',                         [WarehouseInvoiceController::class, 'getData']);
+        Route::post('/create',                  [WarehouseInvoiceController::class, 'store']);
+        Route::get('/show/{id}',                [WarehouseInvoiceController::class, 'show']);
+        Route::put('/update/{id}',              [WarehouseInvoiceController::class, 'update']);
+        Route::delete('/delete/{id}',           [WarehouseInvoiceController::class, 'destroy']);
+        Route::get('/search',                   [WarehouseInvoiceController::class, 'search']);
     });
 
     Route::prefix('review-management')->group(function () {
-        Route::get('/', [ReviewManagementController::class, 'getData']);
-        Route::post('/', [ReviewManagementController::class, 'store']);
-        Route::put('/{id}', [ReviewManagementController::class, 'update']);
-        Route::delete('/{id}', [ReviewManagementController::class, 'destroy']);
+        Route::get('/',                         [ReviewManagementController::class, 'getData']);
+        Route::post('/create',                  [ReviewManagementController::class, 'store']);
+        Route::get('/show/{id}',                [ReviewManagementController::class, 'show']);
+        Route::put('/update/{id}',              [ReviewManagementController::class, 'update']);
+        Route::delete('/delete/{id}',           [ReviewManagementController::class, 'destroy']);
     });
 
     Route::prefix('users')->group(function () {
-        Route::get('/', [UserController::class, 'getData']);
-        Route::get('/{id}', [UserController::class, 'getById']);
-        Route::post('/', [UserController::class, 'store']);
-        Route::put('/{id}', [UserController::class, 'update']);
-        Route::delete('/{id}', [UserController::class, 'destroy']);
+        Route::get('/',                         [UserController::class, 'getData']);
+        Route::post('/create',                  [UserController::class, 'store']);
+        Route::get('/show/{id}',                [UserController::class, 'getById']);
+        Route::put('/update/{id}',              [UserController::class, 'update']);
+        Route::delete('/delete/{id}',           [UserController::class, 'destroy']);
+
+        Route::post('/login',                   [UserController::class, 'login']);
+        Route::post('/check-login',             [UserController::class, 'checkLogin']);
+        Route::post('/logout',                  [UserController::class, 'logout']);
+
+        Route::get('/profile',                  [UserController::class, 'getUserInfo']);
+        Route::put('/profile-update',           [UserController::class, 'updateUserInfo']);
+        Route::put('/change-password',          [UserController::class, 'changePasswordProfile'])->middleware('checkUser');
     });
+
     Route::prefix('booking-food')->group(function () {
         Route::get('/', [BoongkingFoodController::class, 'index']);
         Route::post('/', [BoongkingFoodController::class, 'store']);
@@ -115,14 +155,70 @@ Route::prefix('admin')->group(function () {
         Route::put('/{id}', [BoongkingFoodController::class, 'update']);
         Route::delete('/{id}', [BoongkingFoodController::class, 'destroy']);
     });
+    Route::prefix('carts')->group(function () {
+        Route::get('/', [CartController::class, 'index']);
+        Route::post('/create', [CartController::class, 'store']);
+        Route::get('/{id}', [CartController::class, 'show']);
+        Route::put('/{id}', [CartController::class, 'update']);
+        Route::delete('/{id}', [CartController::class, 'destroy']);
+    });
+
+    Route::prefix('foods')->group(function () { 
+        Route::get('/', [FoodController::class, 'index']);
+        Route::post('/create', [FoodController::class, 'store']);
+        Route::get('/{id}', [FoodController::class, 'show']);
+        Route::put('/{id}', [FoodController::class, 'update']);
+        Route::delete('/{id}', [FoodController::class, 'destroy']);
+    });
+
+    Route::prefix('sales')->group(function () {
+        Route::get('/', [SaleController::class, 'index']);
+        Route::post('/create', [SaleController::class, 'store']);
+        Route::get('/{id}', [SaleController::class, 'show']);
+        Route::put('/{id}', [SaleController::class, 'update']);
+        Route::delete('/{id}', [SaleController::class, 'destroy']);
+    });
+
+    Route::prefix('sale_foods')->group(function () {
+        Route::get('/', [SaleFoodController::class, 'index']);
+        Route::post('/create', [SaleFoodController::class, 'store']);
+        Route::get('/{id}', [SaleFoodController::class, 'show']);
+        Route::put('/{id}', [SaleFoodController::class, 'update']);
+        Route::delete('/{id}', [SaleFoodController::class, 'destroy']);
+    });
+
+    Route::prefix('types')->group(function () {
+        Route::get('/', [TypeController::class, 'index']);
+        Route::post('/create', [TypeController::class, 'store']);
+        Route::get('/{id}', [TypeController::class, 'show']);
+        Route::put('/{id}', [TypeController::class, 'update']);
+        Route::delete('/{id}', [TypeController::class, 'destroy']);
+    });
+
+    Route::prefix('tables')->group(function () {
+        Route::get('/', [TableController::class, 'index']);
+        Route::post('/create', [TableController::class, 'store']);
+        Route::get('/{id}', [TableController::class, 'show']);
+
+        Route::put('/{id}', [TableController::class, 'update']);
+        Route::delete('/{id}', [TableController::class, 'destroy']);
+    });
+
 });
 
-// Nhóm route cho CLIENT
 Route::prefix('client')->group(function () {
-    Route::prefix('rates')->group(function () {
-        Route::get('/', [RateController::class, 'getData']);
-        Route::post('/', [RateController::class, 'store']);
-        Route::put('/{id}', [RateController::class, 'update']);
-        Route::delete('/{id}', [RateController::class, 'destroy']);
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('login', [AuthController::class, 'loginWithOtp']);
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');  // Đăng xuất
+
+    Route::prefix('invoice-food')->group(function () {
+        Route::get('/', [InvoiceFoodController::class, 'index']);
+        Route::post('/', [InvoiceFoodController::class, 'store']);  // Đổi /create thành /
+        Route::get('/{id}', [InvoiceFoodController::class, 'show']);
+        Route::put('/{id}', [InvoiceFoodController::class, 'update']);
+        Route::delete('/{id}', [InvoiceFoodController::class, 'destroy']);
     });
 });
