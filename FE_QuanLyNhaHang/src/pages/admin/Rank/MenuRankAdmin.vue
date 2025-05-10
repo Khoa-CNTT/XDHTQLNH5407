@@ -3,7 +3,7 @@
         <!-- Thanh tìm kiếm và nút thêm -->
         <div class="w-full h-12 flex flex-row justify-end pe-5 pb-2 gap-2">
             <Search v-model="searchQuery" />
-            <AddButton />
+            <AddButton @add="goAdd"></AddButton>
         </div>
 
         <!-- Bảng dữ liệu -->
@@ -13,18 +13,19 @@
                     <tr class="border-2 border-gray-300">
                         <th>
                             <div class="flex flex-row justify-center items-center gap-2">
+                                <SortButton @sort="(key) => sortBy('nameRank', key)" />
                                 <p class="ps-2 text-start w-full">Tên Rank</p>
                             </div>
                         </th>
                         <th>
                             <div class="flex flex-row justify-center items-center gap-2">
-                                <Sort @sort="(direction) => sortBy('necessaryPoint', direction)" />
+                                <SortButton @sort="(direction) => sortBy('necessaryPoint', direction)" />
                                 <p>Điểm</p>
                             </div>
                         </th>
                         <th>
                             <div class="flex flex-row justify-center items-center gap-2">
-                                <Sort @sort="(direction) => sortBy('saleRank', direction)" />
+                                <SortButton @sort="(direction) => sortBy('saleRank', direction)" />
                                 <p>Giảm giá</p>
                             </div>
                         </th>
@@ -57,10 +58,15 @@
                                     </svg>
                                     <div
                                         class="absolute hidden group-hover:flex z-10 right-0 bg-gray-200 border-2 border-gray-400 w-40 flex-col gap-2 rounded-lg p-2 items-start">
-                                        <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDetailRank">Chi
-                                            tiết</p>
-                                        <p class="hover:bg-gray-500 text-start w-full h-full">Chỉnh sửa</p>
-                                        <p class="hover:bg-gray-500 text-start w-full h-full">Xoá</p>
+                                        <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDetail(item)">
+                                            Chi tiết </p>
+                                        <p class="hover:bg-gray-500 text-start w-full h-full" @click="goEdit(item)">
+                                            Chỉnh sửa </p>
+                                        <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDelete(item)">
+                                            Xoá </p>
+
+                                        <ConfirmDelete v-if="showConfirm" @confirm="confirmDelete"
+                                            @cancel="cancelDelete" />
                                     </div>
                                 </div>
                             </div>
@@ -76,35 +82,37 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
-import axios from "axios";
-import { useRouter } from "vue-router";
-import Sort from "../../../components/Admin/SortButton.vue";
-import Search from "../../../components/Admin/Search.vue";
-import Pagination from "../../../components/Admin/Pagination.vue";
+import { ref, computed, onMounted } from 'vue' // <- thêm onMounted
+import { useRouter } from 'vue-router'
+import Search from '../../../components/Admin/Search.vue'
+import AddButton from '../../../components/Admin/AddButton.vue'
+import Pagination from '../../../components/Admin/Pagination.vue'
+import ConfirmDelete from '../../../components/Admin/ConfirmDelete.vue'
+import axios from 'axios'
+import SortButton from '../../../components/Admin/SortButton.vue'
 
 const router = useRouter();
 const searchQuery = ref("");
 const sortKey = ref("");
 const sortDirection = ref("");
+const showConfirm = ref(false);
+const itemToDelete = ref(null);
+const itemsPerPage = 5;
+const currentPage = ref(1);
 const allItems = ref([]);
 
-async function fetchRanks() {
+const fetchRank = async () => {
     try {
         const response = await axios.get("http://127.0.0.1:8000/api/admin/ranks");
-        allItems.value = response.data; // Sửa tại đây
+        allItems.value = response.data;
     } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu rank:", error);
+        console.error("Lỗi khi lấy dữ liệu:", error);
     }
 }
 
-
-onMounted(fetchRanks);
-
-function sortBy(key, direction) {
-    sortKey.value = key;
-    sortDirection.value = direction;
-}
+onMounted(() => {
+    fetchRank()
+})
 
 const filteredItems = computed(() => {
     let result = [...allItems.value];
@@ -117,42 +125,81 @@ const filteredItems = computed(() => {
 
     if (sortKey.value && sortDirection.value) {
         result.sort((a, b) => {
-            const aVal = a[sortKey.value];
-            const bVal = b[sortKey.value];
-
-            if (typeof aVal === "string") {
-                return sortDirection.value === "asc"
-                    ? aVal.localeCompare(bVal)
-                    : bVal.localeCompare(aVal);
+            if (sortDirection.value === "asc") {
+                return a[sortKey.value] > b[sortKey.value] ? 1 : -1;
+            } else {
+                return a[sortKey.value] < b[sortKey.value] ? 1 : -1;
             }
-            return sortDirection.value === "asc" ? aVal - bVal : bVal - aVal;
         });
     }
 
     return result;
 });
 
-const itemsPerPage = 5;
-const currentPage = ref(1);
-const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
-
-// Reset về trang 1 nếu lọc làm mất dữ liệu ở trang hiện tại
-watch([filteredItems, totalPages], () => {
-    if (currentPage.value > totalPages.value) currentPage.value = 1;
-});
+const totalPages = computed(() =>
+    Math.ceil(filteredItems.value.length / itemsPerPage)
+)
 
 const paginatedItems = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage;
-    return filteredItems.value.slice(start, start + itemsPerPage);
-});
+    const start = (currentPage.value - 1) * itemsPerPage
+    const end = start + itemsPerPage
+    return filteredItems.value.slice(start, end)
+})
 
 function changePage(page) {
     if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page;
+        currentPage.value = page
     }
 }
 
-function goDetailRank() {
-    router.push({ name: "admin-details-ranks" });
+function sortBy(key, direction) {
+    sortKey.value = key;
+    sortDirection.value = direction;
+}
+
+function goDelete(item) {
+    itemToDelete.value = item
+    showConfirm.value = true
+}
+
+
+async function confirmDelete() {
+    showConfirm.value = false
+    if (!itemToDelete.value) return
+
+    try {
+        await axios.delete(`http://127.0.0.1:8000/api/admin/ranks/${itemToDelete.value.id}`)
+        alert('Đã xoá rank thành công!')
+
+        allItems.value = allItems.value.filter(item => item.id !== itemToDelete.value.id)
+        itemToDelete.value = null
+    } catch (error) {
+        console.error('Lỗi khi xoá rank:', error)
+        alert('Không thể xoá rank.')
+    }
+}
+
+function cancelDelete() {
+    showConfirm.value = false
+}
+
+function goDetail(item) {
+    router.push({
+        name: 'admin-detail-ranks',
+        params: { id: item.id },
+        query: { data: JSON.stringify(item) }
+    });
+}
+
+function goEdit(item) {
+    router.push({
+        name: 'admin-edit-ranks',
+        params: { id: item.id },
+        query: { data: JSON.stringify(item) }
+    });
+}
+
+function goAdd() {
+    router.push({ name: 'admin-add-ranks' })
 }
 </script>

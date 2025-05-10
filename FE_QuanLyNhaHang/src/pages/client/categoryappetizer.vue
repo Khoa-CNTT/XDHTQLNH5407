@@ -32,9 +32,11 @@
 
               <div class="btn-wrapper">
                 <button class="btn-oder">Đặt Hàng</button>
-                <button class="btn-add" @click="addToCart">
-                  Thêm vào giỏ <i class="fas fa-shopping-cart"></i>
-                </button>
+                <button class="btn-add" @click="handleAddToCart(mon)">
+  Thêm vào giỏ <i class="fas fa-shopping-cart"></i>
+</button>
+
+
                 <div class="gio-hang-icon">
                   <span class="so-luong" v-if="soLuong > 0">{{ soLuong }}</span>
                 </div>
@@ -49,92 +51,86 @@
       </div>
     </div>
   </template>
-  
-  <script setup>
-  import { ref, computed } from 'vue'
-  
-  const categories = ref([
-    {
-      name: 'Nổi Bật',
-      dsMon: [
-        { ten: 'Táo Đỏ', hinh: '/imageicon/comga.png', moTa: 'Giòn ngọt mát lành' },
-        { ten: 'Chuối Vàng', hinh: '/imageicon/bunbo.png', moTa: 'Bổ sung kali tốt cho sức khỏe' }
-      ]
-    },
-    {
-      name: 'Bán chạy',
-      dsMon: [
-        { ten: 'Cà Rốt', hinh: '/imageicon/comga.png', moTa: 'Tốt cho mắt' },
-        { ten: 'Bông cải', hinh: '/imageicon/bunbo.png', moTa: 'Nhiều vitamin C' },
-        { ten: 'Cải bó xôi', hinh: '/imageicon/pizza.png', moTa: 'Giàu chất sắt' }
-      ]
-    },
-    {
-      name: 'Giảm giá',
-      dsMon: [
-    {
-      ten: 'Sữa tươi',
-      hinh: '/imageicon/pizza.png',
-      moTa: 'Ngon và bổ dưỡng',
-      giaCu: 200000,
-      giaMoi: 100000
-    },
-    {
-      ten: 'Phô mai',
-      hinh: '/imageicon/comga.png',
-      moTa: 'Đậm đà, béo ngậy',
-      giaCu: 150000,
-      giaMoi: 90000
-    }
-  ]
-    },
-    {
-      name: 'Mới',
-      dsMon: [
-        { ten: 'Thịt bò', hinh: '/imageicon/bunbo.png', moTa: 'Giàu protein' },
-        { ten: 'Thịt heo', hinh: '/imageicon/comga.png', moTa: 'Mềm thơm' }
-      ]
-    },
-    {
-      name: 'Giá',
-      dsMon: [
-        { ten: 'Gạo lứt', hinh: '/imageicon/pizza.png', moTa: 'Tốt cho sức khỏe' },
-        { ten: 'Ngũ cốc', hinh: '/imageicon/bunbo.png', moTa: 'Nhiều chất xơ' }
-      ]
-    }
-  ])
-//   const drinkItem = ref([
-//   {
-//     name: 'Khai vị',
-//     dsMon: [
-//       { ten: 'Táo Đỏ', hinh: '/imageicon/comga.png', moTa: 'Giòn ngọt mát lành' },
-//       { ten: 'Chuối Vàng', hinh: '/imageicon/bunbo.png', moTa: 'Bổ sung kali tốt cho sức khỏe' }
-//     ]
-//   },
-//   {
-//     name: 'Đồ uống', 
-//     dsMon: [
-//       { ten: 'Nước ép cam', hinh: '/imageicon/nuocepcam.png', moTa: 'Tươi mát, vitamin C' },
-//       { ten: 'Trà sữa', hinh: '/imageicon/trasua.png', moTa: 'Ngọt ngào, béo ngậy' }
-//     ]
-//   },
-// ])
-  const selectedCategoryIndex = ref(null)
-  const soLuong = ref(0)
-  
-  function selectCategory(index) {
-    selectedCategoryIndex.value = index
+<script setup>
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { cartItems, addToCart } from '../../stores/cartStore'
+
+const router = useRouter()
+
+const categories = ref([
+  {
+    name: 'Nổi Bật',
+    dsMon: [
+      { id: 1, ten: 'Táo Đỏ', hinh: '/imageicon/comga.png', moTa: 'Giòn ngọt mát lành' },
+      { id: 2, ten: 'Chuối Vàng', hinh: '/imageicon/bunbo.png', moTa: 'Bổ sung kali tốt cho sức khỏe' }
+    ]
+  },
+  {
+    name: 'Bán chạy',
+    dsMon: [
+      { id: 3,ten: 'Cà Rốt', hinh: '/imageicon/comga.png', moTa: 'Tốt cho mắt' },
+      {id: 4, ten: 'Bông cải', hinh: '/imageicon/bunbo.png', moTa: 'Nhiều vitamin C' },
+      { id: 5,ten: 'Cải bó xôi', hinh: '/imageicon/pizza.png', moTa: 'Giàu chất sắt' }
+    ]
+  },
+  {
+    name: 'Giảm giá',
+    dsMon: [
+      {
+        ten: 'Sữa tươi',
+        hinh: '/imageicon/pizza.png',
+        moTa: 'Ngon và bổ dưỡng',
+        giaCu: 200000,
+        giaMoi: 100000
+      },
+      {
+        ten: 'Phô mai',
+        hinh: '/imageicon/comga.png',
+        moTa: 'Đậm đà, béo ngậy',
+        giaCu: 150000,
+        giaMoi: 90000
+      }
+    ]
+  },
+  {
+    name: 'Mới',
+    dsMon: [
+      { ten: 'Thịt bò', hinh: '/imageicon/bunbo.png', moTa: 'Giàu protein' },
+      { ten: 'Thịt heo', hinh: '/imageicon/comga.png', moTa: 'Mềm thơm' }
+    ]
+  },
+  {
+    name: 'Giá',
+    dsMon: [
+      { ten: 'Gạo lứt', hinh: '/imageicon/pizza.png', moTa: 'Tốt cho sức khỏe' },
+      { ten: 'Ngũ cốc', hinh: '/imageicon/bunbo.png', moTa: 'Nhiều chất xơ' }
+    ]
   }
-  function addToCart() {
-    soLuong.value++
-  }
-  
-  const selectedCategory = computed(() => {
-    return selectedCategoryIndex.value !== null
-      ? categories.value[selectedCategoryIndex.value]
-      : null
-  })
-  </script>
+])
+
+const selectedCategoryIndex = ref(null)
+
+function selectCategory(index) {
+  selectedCategoryIndex.value = index
+}
+
+const selectedCategory = computed(() => {
+  return selectedCategoryIndex.value !== null
+    ? categories.value[selectedCategoryIndex.value]
+    : null
+})
+
+function handleAddToCart(mon) {
+  addToCart(mon)
+}
+
+// Tính tổng số lượng món trong giỏ hàng
+const soLuong = computed(() =>
+  cartItems.value.reduce((total, item) => total + item.soLuong, 0)
+)
+</script>
+
   
   <style scoped>
   html, body {

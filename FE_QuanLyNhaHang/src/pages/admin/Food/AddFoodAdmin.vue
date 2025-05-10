@@ -20,10 +20,6 @@
                             <div class="flex flex-row gap-5">
                                 <p>Best Seller</p>
                                 <SwitchButton />
-                            </div>
-                            <div class="flex flex-row gap-5">
-                                <p>Best Seller</p>
-                                <SwitchButton />
 
                             </div>
                             <div class="flex flex-row gap-5">
@@ -52,8 +48,8 @@
                         <div class="w-[300px]">
                             <p>Kiểu món ăn</p>
                             <select class="h-10 w-full border-2 ps-2" name="month" id="month">
-                                <option value="2">2</option>
                                 <option value="1">1</option>
+                                <option value="2">2</option>
                             </select>
                         </div>
 

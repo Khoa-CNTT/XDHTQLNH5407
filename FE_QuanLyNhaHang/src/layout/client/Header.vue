@@ -83,84 +83,93 @@
           <router-link :to="{ name: 'users-news' }">NEWS</router-link>
         </li>
         <li class="servicefood">
-          <router-link to="/booking"> BOOKING</router-link>
+          <router-link to="/booking"> BOOKING TABLE</router-link>
         </li>
         <li class="servicefood">
           <router-link to="/contact"> CONTACT</router-link>
         </li>
         <div class="flex-1 justify-end flex me-10 items-center">
           <li>
-            <div class="search-container " @click="handleClickOutside">
-              <div :class="isSearch ? 'w-[200px] search-box ' : 'w-[40px] search-box '" @click="handleOpenSearch()">
-                <input type="text" @blur="handleBlur" placeholder="Tìm Món ..." name="" id="">
-                <div>
-                  <i class=" fas  fa-solid fa-magnifying-glass"></i>
-                </div>
-              </div>
-              <!-- <div class="search-icon">
-        <i class="fa-solid fa-magnifying-glass"></i>
-      </div> -->
-              <!-- <div class="search-card">
-        <label style="margin: 0 5px 0 5px;" for="">Tìm Kiếm Món Ăn Của Bạn</label>
-        <input type="text" placeholder="Tìm món ăn..." />
-      </div> -->
-            </div>
+            <div class="search-container" @click="handleClickOutside">
+  <div :class="isSearch ? 'w-[200px] search-box' : 'w-[40px] search-box'" @click="handleOpenSearch">
+    <input
+      type="text"
+      v-model="tuKhoa"
+      @blur="handleBlur"
+      placeholder="Tìm Món ..."
+    />
+    <div>
+      <i class="fas fa-solid fa-magnifying-glass"></i>
+    </div>
+  </div>
+
+  <!-- Hiển thị kết quả tìm kiếm -->
+  <ul v-if="tuKhoa && monTimDuoc.length" class="result-box">
+    <li v-for="mon in monTimDuoc" :key="mon.id">
+      {{ mon.ten }}
+    </li>
+  </ul>
+
+  <p v-else-if="tuKhoa">Không tìm thấy món nào.</p>
+</div>
+
 
           </li>
           <li>
-            <div class="cart-shopping">
-              <router-link :to="{ name: 'users-shoppingCart' }">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span class="cart-count" v-if="cartCount > 0">{{ cartCount }}</span>
-              </router-link>
+  <div class="cart-shopping">
+    <router-link :to="{ name: 'users-shoppingCart' }">
+      <i class="fa-solid fa-cart-shopping"></i>
+      <span class="cart-count" v-if="cartCount > 0">{{ cartCount }}</span>
+    </router-link>
+  </div>
+</li>
 
-            </div>
-          </li>
           <li>
-
             <input type="checkbox" id="menu-toggle" hidden>
 
-            <label for="menu-toggle" class="menu-toggle">
+<label for="menu-toggle" class="menu-toggle">
+  <i class="fa-solid fa-bars"></i>
+</label>
 
-              <i class="fa-solid fa-bars"></i>
+<div class="user-menu">
+  <div class="menu-header">
+    <!-- Gói icon trong label để click vào sẽ đóng menu -->
+    <label for="menu-toggle">
+      <i class="fa-solid fa-bars"></i>
+    </label>
+    <h2>Menu</h2>
+  </div>
 
-            </label>
+  <router-link :to="{ name: 'users-home' }">
+    <div class="menu-item">
+      <i class="fa-solid fa-house"></i>
+      <h2>Home</h2>
+    </div>
+  </router-link>
 
-            <div class="user-menu">
-              <div class="menu-header">
-                <i class="fa-solid fa-bars"></i>
+  <div class="menu-item">
+    <i class="fa-solid fa-user"></i>
+    <router-link :to="{ name: 'users-personalinformation' }">
+      Account
+    </router-link>
+  </div>
 
+  <div class="menu-item">
+    <i class="fa-solid fa-gear"></i>
+    <h2>Setting</h2>
+  </div>
 
-                <h2>Menu</h2>
-              </div>
+  <div class="menu-item">
+    <i class="fa-solid fa-wrench"></i>
+    <h2>Help</h2>
+  </div>
+  <div class="menu-item" @click="handleLogout">
+  <i class="fa-solid fa-right-from-bracket"></i>
+  <h2>Log Out</h2>
+</div>
 
-              <router-link :to="{ name: 'users-home' }">
-                <div class="menu-item">
+</div>
 
-                  <i class="fa-solid fa-house"></i>
-
-                  <h2>Home</h2>
-                </div>
-              </router-link>
-
-              <div class="menu-item">
-                <i class="fa-solid fa-user"></i>
-<router-link :to="{name: 'users-personalinformation'}">
- Acoount
-</router-link>
-              
-              </div>
-              <div class="menu-item">
-                <i class="fa-solid fa-user"></i>
-
-                <h2>Setting</h2>
-              </div>
-              <div class="menu-item">
-                <i class="fa-solid fa-wrench"></i>
-
-                <h2>Help</h2>
-              </div>
-            </div>
           </li>
         </div>
 
@@ -172,38 +181,78 @@
   </nav>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import Swal from 'sweetalert2';
 import '../../assets/css/Header.css'
 import { cartCount } from '../../stores/cartStore';
+import api from '../../services/api';
+import { useRouter} from 'vue-router';
 const currentImage = ref('/imageicon/food icon.png')
 const isSearch = ref(false);
+const tuKhoa = ref('');
+const monTimDuoc = ref([]);
+const router =useRouter();
 
+// Mở ô tìm kiếm
 const handleOpenSearch = () => {
   isSearch.value = true;
 };
 
-// Khi nhấn ra ngoài, ô tìm kiếm sẽ thu lại
+// Thu gọn ô tìm kiếm khi click ra ngoài
 const handleClickOutside = (event) => {
   if (!event.target.closest('.search-box')) {
     isSearch.value = false;
   }
 };
 
-// Khi mất focus (blur) ra ngoài ô input, ô tìm kiếm sẽ thu lại
+// Thu gọn khi mất focus
 const handleBlur = () => {
   if (isSearch.value) {
     isSearch.value = false;
   }
 };
-//  document.addEventListener("click", function (event) {
-//     const toggle = document.getElementById("menu-toggle");
-//     const menu = document.querySelector(".menu");
-//     const icon = document.querySelector(".menu-icon");
 
-//     if (!menu.contains(event.target) && !icon.contains(event.target)) {
-//       toggle.checked = false;
-//     }
-//   });
+// Theo dõi từ khóa và gọi API tìm kiếm
+watch(tuKhoa, (newVal) => {
+  if (!newVal.trim()) {
+    monTimDuoc.value = [];
+    return;
+  }
+
+  api.get(`/tim-mon?ten=${encodeURIComponent(newVal)}`)
+    .then(response => {
+      monTimDuoc.value = response.data.mons; // tuỳ theo cấu trúc dữ liệu trả về
+    })
+    .catch(error => {
+      console.error('Lỗi tìm kiếm món:', error);
+      monTimDuoc.value = [];
+    });
+});
+const handleLogout = async () => {
+  const result = await Swal.fire({
+    title: 'Bạn có chắc chắn muốn đăng xuất không?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Đăng xuất',
+    cancelButtonText: 'Hủy'
+  });
+
+  if (result.isConfirmed) {
+    // Thông báo Đăng Xuất Thành công đẹp hơn
+    Swal.fire({
+      title: 'Đăng xuất thành công!',
+      text: 'Bạn đã đăng xuất khỏi tài khoản.',
+      icon: 'success',
+      confirmButtonText: 'OK'
+    });
+
+    localStorage.removeItem('users-login');
+    router.push('/login');
+  }
+};
+
+
+
 
 </script>
 <style scoped>
@@ -303,13 +352,11 @@ const handleBlur = () => {
   font-weight: bold;
 }
 
-#menu-toggle:checked~.user-menu {
+#menu-toggle:checked ~ .user-menu {
   transform: translateX(0);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
-#menu-toggle:checked~.menu-header i {
-  transform: translateX(200px);
-  color: #333;
-}
+
+
 </style>

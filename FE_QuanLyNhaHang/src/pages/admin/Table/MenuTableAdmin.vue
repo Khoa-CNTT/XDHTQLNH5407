@@ -10,7 +10,7 @@
                     <tr class="border-2 border-gray-300">
                         <th>
                             <div class="flex flex-row justify-center items-center gap-2">
-                                <SortButton @sort="key => sortBy('name', key)" />
+                                <SortButton @sort="direction => sortBy('number', direction)" />
                                 <p class="text-start w-full">Tên bàn</p>
                             </div>
                         </th>
@@ -37,23 +37,22 @@
                                     <img class="hover:cursor-pointer overflow-auto object-cover h-32 w-24"
                                         src="/imageicon/food 1 icon.jpg" alt="">
                                     <div class="ps-5 flex flex-col gap-5">
-                                        <p class="hover:cursor-pointer">{{ item.name }}</p>
-
+                                        <p class="hover:cursor-pointer">{{ "Bàn " + item.number }}</p>
                                     </div>
                                 </div>
                             </div>
                         </td>
-                        <td class="flex justify-center items-center w-full h-full">
-                            <p v-if="item.status === 1" class="bg-green-500 w-44 text-center p-2 rounded-md">Đang trống
+                        <td class="flex justify-center items-center w-full text-white h-full">
+                            <p v-if="item.status === 1" class="bg-green-500 w-44 text-center p-2 rounded-md">
+                                Đang trống
                             </p>
-                            <p v-else-if="item.status === 2" class="bg-yellow-500 w-44 text-center p-2 rounded-md">
-                                Đang sử dụng
-                            </p>
+                            <p v-else-if="item.status === 2" class="bg-yellow-500 w-44 text-center p-2 rounded-md">Đang
+                                sử dụng</p>
                             <p v-else-if="item.status === 3" class="bg-red-500 w-44 text-center p-2 rounded-md">Đã đặt
                             </p>
-                            <p v-else class="bg-red-500 w-44 text-center p-2 rounded-md">Bị đóng
-                            </p>
+                            <p v-else class="bg-gray-500 w-44 text-center p-2 rounded-md">Bị khoá</p>
                         </td>
+
                         <td class="text-center">{{ item.time }}</td>
                         <td class="text-center">
                             <div class="flex justify-center items-center h-full">
@@ -72,10 +71,10 @@
                                         <p class="hover:bg-gray-500 text-start w-full h-full" @click="goEdit(item)">
                                             Chỉnh sửa
                                         </p>
-                                        <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDelete">Xoá</p>
+                                        <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDelete(item)">
+                                            Xoá</p>
                                         <ConfirmDelete v-if="showConfirm" @confirm="confirmDelete"
                                             @cancel="cancelDelete" />
-
                                     </div>
                                 </div>
                             </div>
@@ -90,37 +89,52 @@
 </template>
 
 <script setup>
-
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue' // <- thêm onMounted
 import { useRouter } from 'vue-router'
 import Search from '../../../components/Admin/Search.vue'
 import AddButton from '../../../components/Admin/AddButton.vue'
 import SortButton from '../../../components/Admin/SortButton.vue'
 import Pagination from '../../../components/Admin/Pagination.vue'
 import ConfirmDelete from '../../../components/Admin/ConfirmDelete.vue'
+import axios from 'axios'
 
 const router = useRouter()
 const searchQuery = ref('')
-const sortKey = ref('') // 'name' hoặc 'qty'
-const sortDirection = ref('') // 'asc' | 'desc'
+const sortKey = ref('')
+const sortDirection = ref('')
 const showConfirm = ref(false)
+const itemToDelete = ref(null)
+const itemsPerPage = 5
+const currentPage = ref(1)
+const allItems = ref([])
 
 function sortBy(key, direction) {
     sortKey.value = key
     sortDirection.value = direction
 }
 
+const fetchTable = async () => {
+    try {
+        const response = await axios.get("http://127.0.0.1:8000/api/admin/tables");
+        allItems.value = response.data.data;
+    } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu của bàn:", error);
+    }
+}
+
+onMounted(() => {
+    fetchTable()
+})
+
 const filteredItems = computed(() => {
     let result = [...allItems.value]
 
-    // Lọc theo search nếu có
     if (searchQuery.value) {
         result = result.filter(item =>
-            item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+            String(item.number).toLowerCase().includes(searchQuery.value.toLowerCase())
         )
     }
 
-    // Sắp xếp nếu có key và direction
     if (sortKey.value && sortDirection.value) {
         result.sort((a, b) => {
             if (sortDirection.value === 'asc') {
@@ -134,23 +148,9 @@ const filteredItems = computed(() => {
     return result
 })
 
-const allItems = ref([
-    { id: 1, name: 'bàn 1', time: '01:12:12', status: 1 },
-    { id: 2, name: 'bàn 2', time: '02:12:12', status: 2 },
-    { id: 3, name: 'bàn 3', time: '03:12:12', status: 0 },
-    { id: 4, name: 'bàn 4', time: '11:12:12', status: 2 },
-    { id: 5, name: 'bàn 5', time: '12:12:12', status: 1 },
-    { id: 6, name: 'bàn 6', time: '21:12:12', status: 0 },
-    { id: 7, name: 'bàn 7', time: '23:12:12', status: 2 },
-    { id: 8, name: 'bàn 8', time: '13:12:12', status: 1 },
-    { id: 9, name: 'bàn 9', time: '13:12:12', status: 3 },
-    { id: 10, name: 'bàn 10', time: '13:12:12', status: 3 },
-])
-
-const itemsPerPage = 5
-const currentPage = ref(1)
-
-const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage))
+const totalPages = computed(() =>
+    Math.ceil(filteredItems.value.length / itemsPerPage)
+)
 
 const paginatedItems = computed(() => {
     const start = (currentPage.value - 1) * itemsPerPage
@@ -159,18 +159,31 @@ const paginatedItems = computed(() => {
 })
 
 function changePage(page) {
-    if (page >= 1 && page <= totalPages.value) { currentPage.value = page }
+    if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page
+    }
 }
 
-function goDelete() {
+function goDelete(item) {
+    itemToDelete.value = item
     showConfirm.value = true
 }
 
-function confirmDelete() {
-    showConfirm.value = false
 
-    console.log('Đã xác nhận xoá bàn')
-    router.push({ name: 'admin-tables' })
+async function confirmDelete() {
+    showConfirm.value = false
+    if (!itemToDelete.value) return
+
+    try {
+        await axios.delete(`http://127.0.0.1:8000/api/admin/tables/${itemToDelete.value.id}`)
+        alert('Đã xoá bàn thành công!')
+
+        allItems.value = allItems.value.filter(item => item.id !== itemToDelete.value.id)
+        itemToDelete.value = null
+    } catch (error) {
+        console.error('Lỗi khi xoá bàn:', error)
+        alert('Không thể xoá bàn.')
+    }
 }
 
 function cancelDelete() {
@@ -179,32 +192,21 @@ function cancelDelete() {
 
 function goDetail(item) {
     router.push({
-        name: 'admin-details-tables',
-        params: {
-            id: item.id,
-        },
-        query: {
-            data: JSON.stringify(item)
-        }
+        name: 'admin-detail-tables',
+        params: { id: item.id },
+        query: { data: JSON.stringify(item) }
     });
 }
 
 function goEdit(item) {
     router.push({
         name: 'admin-edit-tables',
-        params: {
-            id: item.id,
-        },
-        query: {
-            data: JSON.stringify(item)
-        }
+        params: { id: item.id },
+        query: { data: JSON.stringify(item) }
     });
 }
 
 function goAdd() {
-    router.push({
-        name: 'admin-add-tables'
-    })
+    router.push({ name: 'admin-add-tables' })
 }
-
 </script>

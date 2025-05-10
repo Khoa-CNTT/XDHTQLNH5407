@@ -1,7 +1,8 @@
 <template>
     <div class="w-[calc(100vw-300px)] h-[calc(100vh-100px)] fixed z-0 mt-20 ms-[300px] flex flex-col p-2">
-        <div class="w-full h-12 flex flex-row justify-end pe-5 pb-2">
+        <div class="w-full h-12 flex flex-row justify-end pe-5 pb-2 gap-2">
             <Search v-model="searchQuery" />
+            <AddButton @add="goAdd"></AddButton>
         </div>
         <div class="w-full h-full border-t border-gray-400 px-2 pt-2">
             <table class="w-full h-fit table-auto font-semibold text-2xl">
@@ -9,46 +10,50 @@
                     <tr class="border-2 border-gray-300">
                         <th>
                             <div class="flex flex-row justify-center items-center gap-2">
-                                <Sort @sort="(direction) => sortBy('name', direction)" />
+                                <SortButton @sort="(direction) => sortBy('nameSale', direction)" />
                                 <p class="text-start w-full">Tên Sale</p>
                             </div>
                         </th>
                         <th>
                             <div class="flex flex-row justify-center items-center gap-2">
-                                <Sort @sort="(direction) => sortBy('point', direction)" />
+                                <SortButton @sort="(direction) => sortBy('startTime', direction)" />
                                 <p>Thời gian bắt đầu</p>
                             </div>
                         </th>
                         <th>
                             <div class="flex flex-row justify-center items-center gap-2">
-                                <Sort @sort="(direction) => sortBy('point', direction)" />
+                                <SortButton @sort="(direction) => sortBy('endTime', direction)" />
                                 <p>Thời gian kết thúc</p>
                             </div>
                         </th>
                         <th>
                             <div class="flex flex-row justify-center items-center gap-2">
-                                <Sort @sort="(direction) => sortBy('point', direction)" />
+                                <SortButton @sort="(direction) => sortBy('percent', direction)" />
                                 <p>Phần trăm giảm</p>
                             </div>
                         </th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     <tr v-for="(item, index) in paginatedItems" :key="index" class="border-2 border-gray-300">
                         <td>
                             <div class="h-full flex flex-row justify-start items-center">
-                                <div class="overflow-hidden flex flex-row justify-center items-center">
-                                    <img class="hover:cursor-pointer overflow-auto object-cover h-32 w-24 rounded-lg shadow-md border"
-                                        :src="`/picture/profile/${item.image}`" alt="Ảnh nhân viên" />
-                                    <p class="ps-5 hover:cursor-pointer">{{ item.nameSale }}</p>
+                                <div class="flex flex-row justify-center items-center h-20">
+                                    <div class="ps-5 flex flex-row gap-5">
+                                        <p class="hover:cursor-pointer">{{ item.nameSale }}</p>
+                                        <div class="flex flex-row gap-2 items-center">
+                                            <SwitchButton :model-value="item.status"
+                                                @toggle="() => toggleStatus(item)" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </td>
                         <td class="text-center">{{ item.startTime }}</td>
                         <td class="text-center">{{ item.endTime }} </td>
-                        <td class="text-center">{{ item.percent }} </td>
-
+                        <td class="text-center">{{ item.percent }}% </td>
                         <td class="text-center">
                             <div class="flex justify-center items-center h-full">
                                 <div
@@ -60,11 +65,14 @@
                                     </svg>
                                     <div
                                         class="absolute hidden group-hover:flex z-10 right-0 bg-gray-200 border-2 border-gray-400 w-40 flex-col gap-2 rounded-lg p-2 items-start">
-                                        <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDetailCategory">
+                                        <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDetail(item)">
                                             Chi tiết
                                         </p>
-                                        <p class="hover:bg-gray-500 text-start w-full h-full">Chỉnh sửa</p>
-                                        <p class="hover:bg-gray-500 text-start w-full h-full">Xoá</p>
+                                        <p class="hover:bg-gray-500 text-start w-full h-full" @click=goEdit(item)>Chỉnh
+                                            sửa
+                                        </p>
+                                        <p class="hover:bg-gray-500 text-start w-full h-full" @click=goDelete(item)>Xoá
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -72,39 +80,55 @@
                     </tr>
                 </tbody>
             </table>
+            <ConfirmDelete v-if="showConfirm" @confirm="confirmDelete" @cancel="cancelDelete" />
             <Pagination :current-page="currentPage" :total-pages="totalPages" @page-changed="changePage" />
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
-import Sort from "../../../components/Admin/SortButton.vue";
-import Search from "../../../components/Admin/Search.vue";
-import Pagination from "../../../components/Admin/Pagination.vue";
+import { ref, computed, onMounted } from 'vue' // <- thêm onMounted
+import { useRouter } from 'vue-router'
+import Search from '../../../components/Admin/Search.vue'
+import Pagination from '../../../components/Admin/Pagination.vue'
+import axios from 'axios'
+import SortButton from '../../../components/Admin/SortButton.vue'
+import SwitchButton from '../../../components/Admin/SwitchButton.vue'
+import AddButton from '../../../components/Admin/AddButton.vue'
+import ConfirmDelete from '../../../components/Admin/ConfirmDelete.vue'
 
 const router = useRouter();
-const searchQuery = ref("");
-const sortKey = ref(""); // 'name' hoặc 'qty'
-const sortDirection = ref(""); // 'asc' | 'desc'
+const searchQuery = ref('');
+const sortKey = ref('');
+const sortDirection = ref('');
+const showConfirm = ref(false);
+const itemToDelete = ref(null);
+const itemsPerPage = 5;
+const currentPage = ref(1);
+const allItems = ref([]);
 
-function sortBy(key, direction) {
-    sortKey.value = key;
-    sortDirection.value = direction;
+const fetchSale = async () => {
+    try {
+        const response = await axios.get("http://127.0.0.1:8000/api/admin/sales");
+        allItems.value = response.data.data;
+    } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error);
+    }
 }
+
+onMounted(() => {
+    fetchSale()
+})
 
 const filteredItems = computed(() => {
     let result = [...allItems.value];
 
-    // Lọc theo search nếu có
     if (searchQuery.value) {
         result = result.filter((item) =>
-            item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+            item.nameSale.toLowerCase().includes(searchQuery.value.toLowerCase())
         );
     }
 
-    // Sắp xếp nếu có key và direction
     if (sortKey.value && sortDirection.value) {
         result.sort((a, b) => {
             if (sortDirection.value === "asc") {
@@ -118,44 +142,87 @@ const filteredItems = computed(() => {
     return result;
 });
 
-const allItems = ref([
-    { id: 1, image: "user1.png", nameSale: "Name 1", startTime: 1, endTime: 1, endTime: 1, percent: 1, status: 1, },
-    { picture: "user1.png", name: "Name 1", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user2.png", name: "Name 2", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user3.png", name: "Name 3", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user4.png", name: "Name 4", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user5.png", name: "Name 5", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user1.png", name: "Name 6", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user1.png", name: "Name 7", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user1.png", name: "Name 8", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user1.png", name: "Name 9", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user1.png", name: "Name 10", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user1.png", name: "Name 11", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user1.png", name: "Name 12", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user1.png", name: "Name 13", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user1.png", name: "Name 14", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user1.png", name: "Name 15", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-    { picture: "user1.png", name: "Name 16", point: Math.floor(Math.random() * 210) + 1, status: Math.round(Math.random()), },
-]);
-
-const itemsPerPage = 5;
-const currentPage = ref(1);
-
-const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
+const totalPages = computed(() =>
+    Math.ceil(filteredItems.value.length / itemsPerPage)
+)
 
 const paginatedItems = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    return filteredItems.value.slice(start, end);
-});
+    const start = (currentPage.value - 1) * itemsPerPage
+    const end = start + itemsPerPage
+    return filteredItems.value.slice(start, end)
+})
 
 function changePage(page) {
     if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page;
+        currentPage.value = page
     }
 }
 
-function goDetailCustomers() {
-    router.push({ name: 'admin-detail-customer' });
+function sortBy(key, direction) {
+    sortKey.value = key
+    sortDirection.value = direction
 }
-</script>
+
+async function toggleStatus(item) {
+    const newStatus = item.status === 1 ? 0 : 1
+    try {
+        await axios.put(`http://127.0.0.1:8000/api/admin/sales/${item.id}`, {
+            ...item,
+            status: newStatus
+        })
+        item.status = newStatus
+    } catch (error) {
+        console.error("Không thể cập nhật trạng thái:", error)
+        alert("Cập nhật trạng thái thất bại.")
+    }
+}
+
+function goDelete(item) {
+    itemToDelete.value = item
+    showConfirm.value = true
+}
+
+async function confirmDelete() {
+    if (!itemToDelete.value || !itemToDelete.value.id) {
+        console.error('Không có item hoặc ID để xoá')
+        showConfirm.value = false
+        return
+    }
+
+    try {
+        await axios.delete(`http://127.0.0.1:8000/api/admin/sales/${itemToDelete.value.id}`)
+        alert('Đã xoá thành công!')
+        allItems.value = allItems.value.filter(item => item.id !== itemToDelete.value.id)
+        itemToDelete.value = null
+        showConfirm.value = false
+    } catch (error) {
+        console.error('Lỗi khi xoá:', error)
+        alert('Không thể xoá.')
+        showConfirm.value = false
+    }
+}
+
+function cancelDelete() {
+    showConfirm.value = false
+    itemToDelete.value = null
+}
+
+function goDetail(item) {
+    router.push({
+        name: 'admin-detail-sales',
+        params: { id: item.id },
+        query: { data: JSON.stringify(item) }
+    });
+}
+
+function goEdit(item) {
+    router.push({
+        name: 'admin-edit-sales',
+        params: { id: item.id },
+        query: { data: JSON.stringify(item) }
+    });
+}
+
+function goAdd() {
+    router.push({ name: 'admin-add-sales' })
+}</script>

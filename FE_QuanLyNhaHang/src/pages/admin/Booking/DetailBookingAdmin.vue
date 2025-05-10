@@ -3,8 +3,7 @@
         <div class="h-full w-full flex flex-col font-semibold">
             <div class="flex flex-row uppercase font-bold text-2xl">
                 <p>ID #</p>
-                <p class="text-red-500">1234</p>
-                <p class="bg-yellow-500 font-semibold text-sm normal-case flex ms-2 px-2 items-center">Đang sử dụng</p>
+                <p class="text-red-500">{{ bookingData?.id }}</p>
             </div>
 
             <div class="w-full h-full flex flex-col">
@@ -23,327 +22,190 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr class="border-2 ">
+                                            <tr v-for="foodItem in bookingData?.booking_foods" :key="foodItem.id"
+                                                class="border-2">
                                                 <td>
                                                     <div class="h-full flex flex-row justify-start items-center ps-2">
                                                         <div
                                                             class="overflow-hidden flex flex-row justify-center items-center">
                                                             <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
+                                                                :src="foodItem.food.image" :alt="foodItem.food.name" />
                                                             <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
+                                                                <p class="hover:cursor-pointer">{{ foodItem.food.name }}
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
+                                                <td class="text-center">{{ foodItem.quantity }}</td>
+                                                <td class="text-center">{{ foodItem.food.cost.toLocaleString() }}</td>
+                                                <td class="text-center">{{ (foodItem.quantity *
+                                                    foodItem.food.cost).toLocaleString() }}</td>
                                             </tr>
-                                            <tr class="border-2 ">
-                                                <td>
-                                                    <div class="h-full flex flex-row justify-start items-center ps-2">
-                                                        <div
-                                                            class="overflow-hidden flex flex-row justify-center items-center">
-                                                            <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
-                                                            <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                            <tr v-if="!bookingData?.booking_foods.length" class="border-2">
+                                                <td colspan="4" class="text-center py-4">Không có món ăn nào được đặt
                                                 </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
-                                            </tr>
-                                            <tr class="border-2 ">
-                                                <td>
-                                                    <div class="h-full flex flex-row justify-start items-center ps-2">
-                                                        <div
-                                                            class="overflow-hidden flex flex-row justify-center items-center">
-                                                            <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
-                                                            <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
-                                            </tr>
-                                            <tr class="border-2 ">
-                                                <td>
-                                                    <div class="h-full flex flex-row justify-start items-center ps-2">
-                                                        <div
-                                                            class="overflow-hidden flex flex-row justify-center items-center">
-                                                            <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
-                                                            <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
-                                            </tr>
-                                            <tr class="border-2 ">
-                                                <td>
-                                                    <div class="h-full flex flex-row justify-start items-center ps-2">
-                                                        <div
-                                                            class="overflow-hidden flex flex-row justify-center items-center">
-                                                            <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
-                                                            <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
-                                            </tr>
-                                            <tr class="border-2 ">
-                                                <td>
-                                                    <div class="h-full flex flex-row justify-start items-center ps-2">
-                                                        <div
-                                                            class="overflow-hidden flex flex-row justify-center items-center">
-                                                            <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
-                                                            <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
-                                            </tr>
-                                            <tr class="border-2 ">
-                                                <td>
-                                                    <div class="h-full flex flex-row justify-start items-center ps-2">
-                                                        <div
-                                                            class="overflow-hidden flex flex-row justify-center items-center">
-                                                            <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
-                                                            <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
-                                            </tr>
-                                            <tr class="border-2 border-gray-300 ">
-                                                <td>
-                                                    <div class="h-full flex flex-row justify-start items-center ps-2">
-                                                        <div
-                                                            class="overflow-hidden flex flex-row justify-center items-center">
-                                                            <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
-                                                            <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
-                                            </tr>
-                                            <tr class="border-2 border-gray-300 ">
-                                                <td>
-                                                    <div class="h-full flex flex-row justify-start items-center ps-2">
-                                                        <div
-                                                            class="overflow-hidden flex flex-row justify-center items-center">
-                                                            <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
-                                                            <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
-                                            </tr>
-                                            <tr class="border-2 border-gray-300 ">
-                                                <td>
-                                                    <div class="h-full flex flex-row justify-start items-center ps-2">
-                                                        <div
-                                                            class="overflow-hidden flex flex-row justify-center items-center">
-                                                            <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
-                                                            <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
-                                            </tr>
-                                            <tr class="border-2 border-gray-300 ">
-                                                <td>
-                                                    <div class="h-full flex flex-row justify-start items-center ps-2">
-                                                        <div
-                                                            class="overflow-hidden flex flex-row justify-center items-center">
-                                                            <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
-                                                            <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
-                                            </tr>
-                                            <tr class="border-2">
-                                                <td>
-                                                    <div class="h-full flex flex-row justify-start items-center ps-2">
-                                                        <div
-                                                            class="overflow-hidden flex flex-row justify-center items-center">
-                                                            <img class="hover:cursor-pointer overflow-auto object-cover h-16 w-10"
-                                                                src="/imageicon/food 1 icon.jpg" alt="">
-                                                            <div class="ps-5 flex flex-col gap-5">
-                                                                <p class="hover:cursor-pointer">Hamberger thịt nướng bơ
-                                                                    tỏi
-                                                                    hấp xả các thứ</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">12</td>
-                                                <td class="text-center">15,000</td>
-                                                <td class="text-center">180,000</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
-
                         </div>
                         <div class="flex-1 w-full h-full flex flex-col gap-2">
-                            <div class="font-bold text-xl uppercase">Hoá đơn</div>
+                            <div class="font-bold text-xl uppercase">Đặt bàn</div>
                             <div class="flex flex-col gap-2 border rounded-lg p-2">
                                 <p class="font-medium">Khách hàng</p>
                                 <div class="flex flex-row items-center gap-3 w-full">
-                                    <img class="w-20 h-20 rounded-full object-cover" src="/imageicon/staff icon.png"
-                                        alt="">
-                                    <p>Lê Minh Trí</p>
+                                    <img class="w-20 h-20 rounded-full object-cover" :src="bookingData?.customer.image"
+                                        :alt="bookingData?.customer.FullName" />
+                                    <div class="flex flex-col gap-2 font-bold">
+                                        <p>{{ bookingData?.customer.FullName }}</p>
+                                        <p class="text-red-500">{{ bookingData?.customer.phoneNumber }}</p>
+                                    </div>
+
                                 </div>
                             </div>
 
                             <div class="flex flex-col gap-2 border rounded-lg p-2">
                                 <div class="font-semibold">Tổng hoá đơn</div>
-                                <div class="flex flex-row justify-between w-full font-semibold">
-                                    <p>Bàn</p>
-                                    <p>15</p>
-                                </div>
-
                                 <div class="flex flex-row justify-between w-full">
                                     <p class="font-medium">Thời gian đặt</p>
-                                    <p class="font-normal">Thứ 7, ngày 19/04/2025</p>
+                                    <p class="font-normal">{{ bookingData?.timeBooking }}</p>
                                 </div>
                                 <div class="flex flex-row justify-between w-full">
-                                    <p class="font-medium">Thời gian sử dụng</p>
-                                    <p class="font-normal">02:02:02</p>
-                                </div>
-                                <div class="flex flex-row justify-between w-full">
-                                    <p class="font-medium">Tổng tiền</p>
+                                    <p class="font-medium">Trạng thái</p>
                                     <div class="flex flex-row font-normal">
-                                        <p>11,555,000</p>
+                                        <p :class="{
+                                            'bg-yellow-500': bookingData?.status === 1,  // Đang chờ
+                                            'bg-green-500': bookingData?.status === 2,   // Thành công
+                                            'bg-gray-500': bookingData?.status === 3,    // Từ chối
+                                            'bg-red-500': bookingData?.status === 4      // Bị huỷ
+                                        }"
+                                            class="font-semibold text-sm normal-case flex ms-2 px-2 items-center text-white rounded">
+                                            {{ getStatusText(bookingData?.status) }}
+                                        </p>
+
+                                    </div>
+                                </div>
+                                <div class="flex flex-row justify-between w-full">
+                                    <p class="font-medium">Tiền cọc món (30%)</p>
+                                    <div class="flex flex-row font-normal">
+                                        <p>{{ calculateFoodDeposit(bookingData?.booking_foods).toLocaleString() }}</p>
                                         <p class="text-sm">VNĐ</p>
                                     </div>
                                 </div>
                                 <div class="flex flex-row justify-between w-full">
-                                    <p class="font-medium">VAT (5%)</p>
+                                    <p class="font-medium">Tiền cọc bàn</p>
                                     <div class="flex flex-row font-normal">
-                                        <p>577,750</p>
+                                        <p>50,000</p>
                                         <p class="text-sm">VNĐ</p>
                                     </div>
-                                </div>
-                                <div class="flex flex-row justify-between w-full">
-                                    <p class="font-medium">Giảm giá</p>
-                                    <div class="flex flex-row font-normal">
-                                        <p>500,000</p>
-                                        <p class="text-sm">VNĐ</p>
-                                    </div>
-                                </div>
-                                <div class="flex flex-row justify-between w-full">
-                                    <p class="font-medium">Điểm nhận được</p>
-                                    <p class="font-normal">25</p>
                                 </div>
                             </div>
                             <div class="flex flex-row gap-2 justify-between border rounded-lg p-2">
                                 <p>Tổng thanh toán</p>
                                 <div class="flex flex-row text-red-500">
-                                    <p>11,632,750</p>
+                                    <p>{{ calculateTotal(bookingData?.booking_foods).toLocaleString() }}</p>
                                     <p class="text-sm">VNĐ</p>
                                 </div>
                             </div>
                             <div class="flex flex-row gap-2 border rounded-lg p-2">
-                                <div
-                                    class="bg-green-500 rounded-lg p-2 flex justify-center items-center flex-1 hover:cursor-pointer hover:bg-green-300">
-                                    Thanh toán
-                                </div>
-                                <div
-                                    class="bg-red-500 rounded-lg p-2 flex justify-center items-center flex-1 hover:cursor-pointer hover:bg-red-300">
-                                    Huỷ
-                                </div>
-                                <div class=" rounded-lg border p-2 flex justify-center items-center flex-1 hover:cursor-pointer hover:bg-gray-300"
+                                <template v-if="bookingData?.status === 1">
+                                    <div class="bg-green-500 rounded-lg p-2 flex justify-center items-center flex-1 hover:cursor-pointer hover:bg-green-300"
+                                        @click="acceptBooking">
+                                        Chấp nhận
+                                    </div>
+                                    <div class="bg-red-500 rounded-lg p-2 flex justify-center items-center flex-1 hover:cursor-pointer hover:bg-red-300"
+                                        @click="rejectBooking">
+                                        Từ chối
+                                    </div>
+                                </template>
+                                <div class="rounded-lg border p-2 flex justify-center items-center flex-1 hover:cursor-pointer hover:bg-gray-300"
                                     @click="goBack">
                                     Trở lại
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 </template>
-<script setup>
-import { useRouter } from 'vue-router'
-const router = useRouter()
 
-function goBack() {
-    router.push({ name: 'admin-booking' })
+<script setup>
+import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import axios from 'axios';
+
+const router = useRouter();
+const route = useRoute();
+
+const bookingData = route.query.data ? JSON.parse(route.query.data) : null;
+
+// Get status text based on status code
+function getStatusText(status) {
+    switch (status) {
+        case 1:
+            return 'Đang chờ';
+        case 2:
+            return 'Thành công';
+        case 3:
+            return 'Từ chối';
+        case 4:
+            return 'Bị huỷ';
+        default:
+            return 'Không xác định';
+    }
 }
 
+
+// Calculate food deposit (30% of food total)
+function calculateFoodDeposit(bookingFoods) {
+    if (!bookingFoods || !bookingFoods.length) return 0;
+    const foodTotal = bookingFoods.reduce((total, foodItem) => {
+        return total + foodItem.quantity * foodItem.food.cost;
+    }, 0);
+    return foodTotal * 0.3;
+}
+
+// Calculate total (food deposit + table deposit)
+function calculateTotal(bookingFoods) {
+    const tableDeposit = 50000;
+    const foodDeposit = calculateFoodDeposit(bookingFoods);
+    return foodDeposit + tableDeposit;
+}
+
+async function acceptBooking() {
+    try {
+        await axios.put(`http://127.0.0.1:8000/api/admin/bookings/${bookingData.id}`, {
+            status: 2, // Thành công
+        });
+        alert('Đã chấp nhận đặt bàn!');
+        router.push({ name: 'admin-booking' });
+    } catch (error) {
+        console.error('Lỗi khi chấp nhận đặt bàn:', error);
+        alert('Có lỗi xảy ra khi chấp nhận đặt bàn.');
+    }
+}
+
+async function rejectBooking() {
+    try {
+        await axios.put(`http://127.0.0.1:8000/api/admin/bookings/${bookingData.id}`, {
+            status: 3, // Từ chối
+        });
+        alert('Đã từ chối đặt bàn!');
+        router.push({ name: 'admin-booking' });
+    } catch (error) {
+        console.error('Lỗi khi từ chối đặt bàn:', error);
+        alert('Có lỗi xảy ra khi từ chối đặt bàn.');
+    }
+}
+
+
+// Go back to booking list
+function goBack() {
+    router.push({ name: 'admin-booking' });
+}
 </script>

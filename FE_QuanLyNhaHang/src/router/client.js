@@ -53,6 +53,27 @@ const users = [
                 name: "users-evaluation",
                 component: () => import("../pages/client/evaluation.vue")
             }, 
+            {
+                path: '/history',
+                name: 'History',
+                component: () => import('../pages/client/history.vue')
+              },
+              {
+                path: '/booking-history',
+                name: 'History',
+                component: () => import('../pages/client/bookinghistory.vue')
+              },
+            //   {
+            //     path: '/register',
+            //     name: 'users-register',
+            //     component: () => import('../pages/loginclient/register.vue')
+            //   },
+            //   {
+            //     path: '/login',
+            //     name: 'users-login',
+            //     component: () => import('../pages/loginclient/login.vue')
+            //   }
+              
         ]
     }
 ];

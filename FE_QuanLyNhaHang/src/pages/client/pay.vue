@@ -1,270 +1,320 @@
 <template>
-    <div class="container-pay">
-        <div class="payment">
-            <div class="col-left">
-                <div class="main-inform">
-                    <div class="shop-title">
-                        Nhà Hàng Phê Food
-                        <img src="/imageicon/logo.png" alt="">
+  <div class="container-pay">
+    <div class="payment">
+      <div class="col-left">
+        <div class="main-inform">
+          <div class="shop-title">
+            Nhà Hàng Phê Food
+            <img src="/imageicon/logo.png" alt="" />
+          </div>
+
+          <div class="shop-inform">
+            <div class="shop-name">Thông tin nhận hàng</div>
+            <div class="pay-login">
+              <p><i class="fa-solid fa-user"></i> Đăng Nhập</p>
+            </div>
+            <div class="pay-transfer">
+              <p>Vận chuyển</p>
+            </div>
+          </div>
+
+          <div class="main-content">
+            <div class="row">
+              <div class="row-col-left">
+                <label for="id_table">Bàn số</label>
+                <input type="number" id="id_table" v-model="form.id_table" placeholder="Nhập số bàn" />
+
+                <label for="timeEnd">Thời gian kết thúc</label>
+                <input type="datetime-local" id="timeEnd" v-model="form.timeEnd" />
+
+                <label for="total">Tổng tiền</label>
+                <input type="number" id="total" v-model="form.total" placeholder="Nhập tổng tiền" />
+
+                <label for="id_user">Người tạo đơn (ID user)</label>
+                <input type="number" id="id_user" v-model="form.id_user" placeholder="Nhập ID người dùng" />
+
+                <label for="id_customer">Khách hàng (ID)</label>
+                <input type="number" id="id_customer" v-model="form.id_customer" placeholder="Nhập ID khách hàng" />
+              </div>
+
+              <div class="row-col-right">
+                <div class="name-pay"><p>Thanh Toán</p></div>
+
+                <div class="radio-pay">
+                  <div class="content-box_row">
+                    <div class="radio-wrapper" v-for="(pay, index) in namePay" :key="index">
+                      <label class="radio-label">
+                        <input
+                          name="paymentMethod"
+                          type="radio"
+                          class="input-radio"
+                          :value="pay.name"
+                          v-model="selectedPayment"
+                        />
+                        <span class="radio__label__primary">{{ pay.name }}</span>
+                      </label>
                     </div>
-                    <div class="shop-inform">
-                        <div style="margin-left: 10px;" class="shop-name">
-                            Thông tin nhận hàng
-                        </div>
-                        <div class="pay-login">
-                            <p><i class="fa-solid fa-user"></i>Đăng Nhập</p>
-                        </div>
-                        <div style="margin-left: 25px;" class="pay-transfer">
-                            <p>Vận chuyển</p>
-                        </div>
+
+                    <div class="content-box__row__desc" v-if="selectedPayment === 'Thanh toán khi giao hàng'">
+                      <p>Bạn chỉ phải thanh toán khi nhận được hàng</p>
                     </div>
-                    <div class="main-content">
-                        <div class="row">
-                            <div class="row-col-left">
-                                <label for=""> Email</label>
-                                <input type="email" placeholder="Nhập Email">
-                                <label for=""> Họ và Tên
-                                </label>
-                                <input type="text" placeholder="Nhập Tên">
-                                <form>
-                                    <label for="phone">Số điện thoại:</label>
-                                    <div class="phone-container">
-
-                                        <input type="tel" class="phone" name="phone" placeholder="Nhập số điện thoại"
-                                            required>
-                                        <select id="country-code" name="country-code">
-                                            <option value="+1">+1 (Mỹ)</option>
-                                            <!-- <option value="+84">+84 <i class="fa-solid fa-star"></i></option> -->
-                                            <option value="+44">+44(Anh)</option>
-                                            <option value="+61">+61 (Úc)</option>
-                                        </select>
-                                    </div>
-
-                                </form>
-                                <label for=""> Địa chỉ
-                                </label>
-                                <input type="text" placeholder="Nhập địa chỉ">
-                                <label for=""> Địa chỉ
-                                </label>
-                                <input type="text"> <label for=""> Địa chỉ
-                                </label>
-                                <input type="text">
-
-
-                            </div>
-
-                            <div class="row-col-right">
-                                <div class="do-something">
-                                    ??????
-                                </div>
-
-                                <div class="name-pay">
-                                    <p>Thanh Toán</p>
-                                </div>
-
-                                <div class="radio-pay">
-                                    <div class="content-box_row">
-                                        <div class="radio-wrapper" v-for="(pay ,index) in namePay" :key="index">
-                                            <label class="radio-label">
-                                                <input name="paymentMethod" id="paymentMethod" type="radio"
-                                                    class="input-radio" value="552267">
-                                                <span class="radio__label__primary">{{ pay.name }}</span>
-                                                <span class="radio__label__accessory">
-                                                    <span class="radio__label__icon">
-                                                        <i class="payment-icon payment-icon--4"></i>
-                                                    </span>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="content-box__row__desc" id="desc" style="display: none;">
-        <p>Bạn chỉ phải thanh toán khi nhận được hàng</p>
-      </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
-            <div class="col-right">
-
-            </div>
+          </div>
         </div>
+      </div>
+      <div class="col-right">
+        Bạn chưa có mặt hàng nào
+        <div class="order-cart" v-if="!paymentSuccessful">
+          <h3 class="order-title"><strong>Đơn Hàng Của Bạn</strong></h3>
 
+          <div v-if="cartItems.length === 0">Chưa có mặt hàng nào</div>
+          <div v-else>
+            <ul>
+              <li class="order-item" v-for="(item, index) in cartItems" :key="item.id">
+                <div class="item-col info">
+                  <img :src="item.hinh" alt="" />
+                  <span>{{ item.ten }}</span>
+                </div>
+                <div class="item-col price">{{ item.gia }}₫</div>
+                <div class="item-col quantity">x{{ item.soLuong }}</div>
+                <div class="item-col total">
+                  {{ item.gia * item.soLuong }}₫
+                  <button class="btn-delete" @click="xoaHang(index)">Xóa</button>
+                </div>
+              </li>
+            </ul>
+
+            <div class="order-btn-wrapper">
+              <button class="btn-orderItem" @click="datMon">Đặt Món</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
+  </div>
 </template>
-<script setup>
-const radioCOD = document.getElementById('paymentMethod');
-const descCOD = document.getElementById('desc');
 
-const allRadios = document.querySelectorAll('input[name="paymentMethod"]');
-allRadios.forEach(radio => {
-  radio.addEventListener('change', function() {
-    if (radioCOD.checked) {
-      descCOD.style.display = 'block';
-    } else {
-      descCOD.style.display = 'none';
-    }
-  });
-});
-const namePay =[
-    {
-        name: 'Thanh toán khi giao hàng',
-    },
-    {
-        name: ' Thanh toán trước khi giao hàng'
-    }
+<script setup>
+import { ref } from 'vue'
+import api from '../../services/api'
+import { cartItems } from '../../stores/cartStore'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const form = ref({
+  id_table: '',
+  timeEnd: '',
+  total: '',
+  id_user: '',
+  id_customer: ''
+})
+
+const selectedPayment = ref('')
+const namePay = [
+  { name: 'Thanh toán khi giao hàng' },
+  { name: 'Thanh toán online' }
 ]
+const paymentSuccessful = ref(false)
+
+const xoaHang = (index) => {
+  cartItems.splice(index, 1)
+}
+
+const datMon = async () => {
+  if (!form.value.id_table || !form.value.timeEnd || !form.value.total || !form.value.id_user || !form.value.id_customer || !selectedPayment.value) {
+    alert("Vui lòng nhập đầy đủ thông tin!");
+    return;
+  }
+
+  const payload = {
+    id_table: form.value.id_table,
+    timeEnd: form.value.timeEnd,
+    total: form.value.total,
+    id_user: form.value.id_user,
+    id_customer: form.value.id_customer,
+    payment_method: selectedPayment.value,
+    items: cartItems.value.map(item => ({
+      id_product: item.id,
+      quantity: item.soLuong,
+      price: item.gia
+    }))
+  };
+
+  try {
+    const response = await api.post('/admin/invoices/create', payload)
+    console.log('Invoice created successfully:', response.data);
+    paymentSuccessful.value = true;
+    alert('Thanh toán thành công');
+  } catch (error) {
+    if (error.response) {
+      console.error('Error response:', error.response);
+      alert('Có lỗi xảy ra khi tạo hóa đơn, vui lòng kiểm tra lại.');
+    } else {
+      console.error('Error:', error.message);
+      alert('Có lỗi xảy ra khi thanh toán.');
+    }
+  }
+}
 </script>
+
+
+
+
+
 <style scoped>
 .container-pay {
-    
-    width: 100%;
-    margin: 0 auto;
-
-}
-
-.shop-title {
-    margin-left: 10px;
-    font-size: 30px;
-    color: blue;
-    display: flex;
-}
-
-.shop-title img {
-    width: 150px;
-    margin-left: 10px;
-}
-
-.main-inform {
-    padding: 10px;
-}
-
-.shop-inform {
-    display: flex;
-}
-
-.pay-login {
-    margin-left: 160px;
-    color: red;
-    cursor: pointer;
-
-}
-
-.pay-login i {
-    margin-right: 8px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .payment {
-    height: 100%;
-    background-color: white;
-
+  display: flex;
 }
-
+.content-box__row__desc{
+  height: 80px;
+  background: red;
+}
 .col-left {
-    width: 70%;
+  width: 70%;
+  background: #fff;
+  padding: 10px;
 }
 
 .col-right {
-    width: 30%;
+  width: 30%;
+  background: #f9f9f9;
+  padding: 10px;
 }
 
-.row {
-    display: flex;
-    width: 100%;
+.shop-title {
+  font-size: 30px;
+  color: blue;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.row-col-left {
-    width: 50%;
-
-    padding: 10px;
-    flex-direction: column;
-    display: flex;
-    margin-top: 4px;
+.shop-title img {
+  width: 120px;
 }
 
+.shop-inform {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 10px 0;
+}
+
+.pay-login,
+.pay-transfer {
+  cursor: pointer;
+  color: red;
+}
+
+.main-content .row {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+}
+
+.row-col-left,
 .row-col-right {
-    width: 50%;
-
-    padding: 10px;
-}
-
-.phone {
-    margin-right: 10px;
-
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #fff;
-    color: #333;
-    font-size: 16px;
-    transition: all 0.3s ease;
-}
-
-.phone-container {
-    display: flex;
-    align-items: center;
-}
-
-select,
-input[type="tel"] {
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    font-size: 16px;
-}
-
-select {
-    width: 100px;
-
-}
-
-input[type="tel"] {
-    flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
 }
 
 .radio-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    border: 1px solid red;
-    width: 100%;
-    height: 50px;
-
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  gap: 10px;
 }
 
 .input-radio {
-    width: 16px;
-    height: 16px;
-    margin-left: 20px;
+  width: 16px;
+  height: 16px;
 }
 
 .radio__label__primary {
-    font-size: 16px;
-
+  font-size: 16px;
 }
 
 .radio__label__accessory {
-    margin-left: auto;
+  margin-left: auto;
 }
 
 .payment-icon--4::before {
-    content: "";
-    background-image: url('/imageicon/payment_1.png');
-    width: 50px;
-    height: 30px;
-    display: inline-block;
-    background-size: cover;
-    background-repeat: no-repeat;
-    display: flex;
-    align-items: center;
-    margin-right: 25px;
+  content: "";
+  background-image: url('/imageicon/payment_1.png');
+  width: 50px;
+  height: 30px;
+  display: inline-block;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.order-cart {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.order-title {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.item-col img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+}
+
+.item-col {
+  flex: 1;
+}
+
+.btn-delete {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.btn-orderItem {
+  background-color: green;
+  color: white;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  margin-top: 10px;
+  cursor: pointer;
+  border-radius: 5px;
 }
 </style>

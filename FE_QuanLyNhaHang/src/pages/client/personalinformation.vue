@@ -521,7 +521,23 @@ border-radius: 20px;
     flex: 0 0 60%; 
     padding-right: 15px; 
   }
-  
+  .progress-bar .milestone .mid, 
+.progress-bar .milestone .current, 
+.progress-bar .milestone .start {
+  animation: khanh 1s infinite;
+}
+
+  @keyframes khanh{
+    0%{
+      box-shadow: 0 0 0 0 rgba(250, 229, 113, 0.7);
+    }
+    50%{
+      box-shadow: 0 0 0 10px rgba(250, 229, 113, 0.7);
+    }
+    100%{
+      box-shadow: 0 0 0 0 rgba(250, 229, 113, 0);
+    }
+  }
  
   </style>
   

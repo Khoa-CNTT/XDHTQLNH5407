@@ -10,42 +10,27 @@
           <tr class="border-2 border-gray-300">
             <th>
               <div class="flex flex-row justify-center items-center gap-2">
-                <SortButton @sort="(key) => sortBy('name', key)" />
+                <SortButton @sort="key => sortBy('name', key)" />
                 <p class="text-start w-full">Tên kiểu</p>
               </div>
             </th>
-            <!-- <th>
-              <div class="flex flex-row justify-center items-center gap-2">
-                <SortButton @sort="(direction) => sortBy('qty_category', direction)" />
-                <p>Số lượng loại</p>
-              </div>
-            </th> -->
             <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in paginatedItems" :key="index" class="border-2 border-gray-300">
+          <tr v-for="(item, index) in paginatedItems" :key="item.id" class="border-2 border-gray-300">
             <td>
               <div class="h-full flex flex-row justify-start items-center">
                 <div class="h-20 flex flex-row justify-center items-center">
                   <div class="ps-5 flex flex-row gap-5">
                     <p class="hover:cursor-pointer">{{ item.name }}</p>
                     <div class="flex flex-row gap-2 items-center">
-                      <div v-if="item.status === 1"
-                        class="hover:cursor-pointer w-16 h-8 flex rounded-full border-2 border-black justify-end items-center p-1">
-                        <div class="w-6 h-6 bg-green-500 rounded-full"></div>
-                      </div>
-                      <div v-else
-                        class="hover:cursor-pointer w-16 h-8 flex rounded-full border-2 border-black justify-start items-center p-1">
-                        <div class="w-6 h-6 bg-red-500 rounded-full"></div>
-                      </div>
+                      <SwitchButton :model-value="item.status" @toggle="() => toggleStatus(item)" />
                     </div>
                   </div>
                 </div>
               </div>
             </td>
-            <!-- <td class="text-center">{{ item.qty_food }}</td> -->
-            <!-- <td class="text-center">{{ item.qty_category }}</td> -->
             <td class="text-center">
               <div class="flex justify-center items-center h-full">
                 <div class="w-10 h-10 text-gray-800 hover:bg-gray-400 hover:cursor-pointer rounded-lg relative group">
@@ -60,8 +45,7 @@
                     <p class="hover:bg-gray-500 text-start w-full h-full" @click="goEdit(item)">
                       Chỉnh sửa
                     </p>
-                    <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDelete">Xoá</p>
-                    <ConfirmDelete v-if="showConfirm" @confirm="confirmDelete" @cancel="cancelDelete" />
+                    <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDelete(item)">Xoá</p>
                   </div>
                 </div>
               </div>
@@ -69,123 +53,145 @@
           </tr>
         </tbody>
       </table>
+      <ConfirmDelete v-if="showConfirm" @confirm="confirmDelete" @cancel="cancelDelete" />
       <Pagination :current-page="currentPage" :total-pages="totalPages" @page-changed="changePage" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from "vue-router";
-import Search from "../../../components/Admin/Search.vue";
-import AddButton from "../../../components/Admin/AddButton.vue";
-import SortButton from "../../../components/Admin/SortButton.vue";
-import Pagination from "../../../components/Admin/Pagination.vue";
-import ConfirmDelete from '../../../components/Admin/ConfirmDelete.vue';
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+import Search from '../../../components/Admin/Search.vue'
+import AddButton from '../../../components/Admin/AddButton.vue'
+import SortButton from '../../../components/Admin/SortButton.vue'
+import Pagination from '../../../components/Admin/Pagination.vue'
+import SwitchButton from '../../../components/Admin/SwitchButton.vue'
+import ConfirmDelete from '../../../components/Admin/ConfirmDelete.vue'
 
-const router = useRouter();
-const searchQuery = ref("");
-const sortKey = ref(""); // 'name' hoặc 'qty'
-const sortDirection = ref(""); // 'asc' | 'desc'
+const router = useRouter()
+const searchQuery = ref('')
+const sortKey = ref('')
+const sortDirection = ref('')
 const showConfirm = ref(false)
-
-function sortBy(key, direction) {
-  sortKey.value = key;
-  sortDirection.value = direction;
-}
-
-const filteredItems = computed(() => {
-  let result = [...allItems.value];
-
-  // Lọc theo search nếu có
-  if (searchQuery.value) {
-    result = result.filter((item) =>
-      item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
-  }
-
-  // Sắp xếp nếu có key và direction
-  if (sortKey.value && sortDirection.value) {
-    result.sort((a, b) => {
-      if (sortDirection.value === "asc") {
-        return a[sortKey.value] > b[sortKey.value] ? 1 : -1;
-      } else {
-        return a[sortKey.value] < b[sortKey.value] ? 1 : -1;
-      }
-    });
-  }
-  return result;
-});
-
-const allItems = ref([
-  {
-    id: 1, name: "Thức ăn", status: 1,
-  },
-  {
-    id: 2, name: "Nước", status: 0,
-  },
-]);
-
-const itemsPerPage = 5;
-const currentPage = ref(1);
-
-const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
+const itemToDelete = ref(null)
+const allItems = ref([])
+const itemsPerPage = 5
+const currentPage = ref(1)
+const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage))
 
 const paginatedItems = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filteredItems.value.slice(start, end);
-});
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredItems.value.slice(start, end)
+})
 
-function changePage(page) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
+const filteredItems = computed(() => {
+  let result = [...allItems.value]
+
+  if (searchQuery.value) {
+    result = result.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
+  }
+
+  if (sortKey.value && sortDirection.value) {
+    result.sort((a, b) => {
+      if (sortDirection.value === 'asc') {
+        return a[sortKey.value] > b[sortKey.value] ? 1 : -1
+      } else {
+        return a[sortKey.value] < b[sortKey.value] ? 1 : -1
+      }
+    })
+  }
+  return result
+})
+
+
+async function toggleStatus(item) {
+  const newStatus = item.status === 1 ? 0 : 1
+  try {
+    await axios.put(`http://127.0.0.1:8000/api/admin/types/${item.id}`, {
+      ...item,
+      status: newStatus
+    })
+    item.status = newStatus
+  } catch (error) {
+    console.error("Không thể cập nhật trạng thái:", error)
+    alert("Cập nhật trạng thái thất bại.")
   }
 }
 
-function goDelete() {
+
+onMounted(async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/api/admin/types')
+    allItems.value = response.data.data // Extract data from API response
+  } catch (error) {
+    console.error('Lỗi khi tải dữ liệu types:', error)
+    alert('Không thể tải danh sách kiểu món ăn.')
+  }
+})
+
+function sortBy(key, direction) {
+  sortKey.value = key
+  sortDirection.value = direction
+}
+
+function goDelete(item) {
+  itemToDelete.value = item
   showConfirm.value = true
 }
 
-function confirmDelete() {
-  showConfirm.value = false
+async function confirmDelete() {
+  if (!itemToDelete.value || !itemToDelete.value.id) {
+    console.error('Không có item hoặc ID để xoá')
+    showConfirm.value = false
+    return
+  }
 
-  console.log('Đã xác nhận xoá kiểu món ăn')
-  router.push({ name: 'admin-types' })
+  try {
+    await axios.delete(`http://127.0.0.1:8000/api/admin/types/${itemToDelete.value.id}`)
+    alert('Đã xoá kiểu món ăn thành công!')
+    allItems.value = allItems.value.filter(item => item.id !== itemToDelete.value.id)
+    itemToDelete.value = null
+    showConfirm.value = false
+  } catch (error) {
+    console.error('Lỗi khi xoá kiểu món ăn:', error)
+    alert('Không thể xoá kiểu món ăn.')
+    showConfirm.value = false
+  }
 }
 
 function cancelDelete() {
   showConfirm.value = false
+  itemToDelete.value = null
+}
+
+function changePage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
 }
 
 function goDetail(item) {
   router.push({
-    name: 'admin-details-types',
-    params: {
-      id: item.id,
-    },
-    query: {
-      data: JSON.stringify(item)
-    }
-  });
+    name: 'admin-detail-types',
+    params: { id: item.id },
+    query: { data: JSON.stringify(item) }
+  })
 }
 
 function goAdd() {
-  router.push({
-    name: 'admin-add-types',
-  })
+  router.push({ name: 'admin-add-types' })
 }
 
 function goEdit(item) {
   router.push({
     name: 'admin-edit-types',
-    params: {
-      id: item.id,
-    },
-    query: {
-      data: JSON.stringify(item)
-    }
-  });
+    params: { id: item.id },
+    query: { data: JSON.stringify(item) }
+  })
 }
-
 </script>

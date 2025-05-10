@@ -2,7 +2,7 @@
     <div class="container">
         <div class="order-table">
             <div class="col-left">
-                <p class="title-oder">
+                <p style="font-size: 40px;" class="title-oder">
                     <i class="fas fa-utensils"></i>
                     Liên Hệ Đặt Bàn
                     <i class="fas fa-utensils"></i>
@@ -11,52 +11,43 @@
                 <div class="input-text">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Id khách hàng</label>
-                            <input type="text" v-model="form.customer_name" placeholder="Teen khách hàng..." />
-
+                            <label>Họ và tên</label>
+                            <input type="text" v-model="form.FullName" placeholder="Nhập họ và tên..." maxlength="255" required />
                         </div>
                         <div class="form-group">
-                            <label>Id bàn</label>
-                            <input type="text" v-model="form.table_number" placeholder="ID bàn..." />
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <!-- <div class="form-group">
-                            <label>Số Điện Thoại</label>
-                            <input type="text" placeholder="Nhập số điện thoại..." v-model="form.phone"/>
-                        </div> -->
-                        <div class="form-group">
-                            <label>Món ăn </label>
-                            <input type="text" v-model="form.food_name" placeholder="Món ăn..." />
+                            <label>Số điện thoại</label>
+                            <input type="text" v-model="form.phoneNumber" placeholder="Nhập số điện thoại..." maxlength="20" required />
                         </div>
                     </div>
+
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Số Lượng</label>
-                            <input type="number" v-model="form.quantity" placeholder="Số lượng..." />
-
+                            <label>Số lượng</label>
+                            <input type="number" v-model="form.quantity" placeholder="Số lượng..." min="1" required />
                         </div>
                         <div class="form-group">
                             <label>Thời gian bạn đến?</label>
-                            <input type="datetime-local" v-model="form.timeBooking" />
+                            <input type="datetime-local" v-model="form.timeBooking" required />
                         </div>
                     </div>
                 </div>
+
                 <div class="oder-introduce">
-                    <p>Khác có thể đặt tiệc hội nghị , liên hoan vui lòng gọi trực tiếp:
-                        <strong class="number-phone"> 1900 2345 </strong>
+                    <p>Khác có thể đặt tiệc hội nghị, liên hoan vui lòng gọi trực tiếp:
+                        <strong class="number-phone">1900 2345</strong>
                     </p>
                 </div>
-                <button class="oder-btn">
-                    <strong @click="createBooking">Đặt Bàn Ngay</strong>
-                    <p v-if="errors.length" class="error-message">
-                        Vui lòng kiểm tra lại thông tin.
-                    </p>
 
+                <button class="oder-btn" @click="createBooking">
+                    <strong>Đặt Bàn Ngay</strong>
+                    <p v-if="errors.message" class="error-message">
+                        {{ errors.message }}
+                    </p>
                 </button>
             </div>
+
             <div class="col-right">
-                <img src="/imageicon/bunbo.png" alt="Hình ảnh" />
+                <img style="border-radius: 50%; margin-bottom: 50px;" src="/imageicon/phefood.png" alt="Hình ảnh" />
             </div>
         </div>
     </div>
@@ -65,30 +56,65 @@
 <script setup>
 import api from '../../services/api';
 import { useRouter } from 'vue-router';
-import '../../assets/css/Booking.css'
+import '../../assets/css/Booking.css';
 import { ref, reactive } from 'vue';
+
 const errors = ref({});
 const router = useRouter();
+
 const form = reactive({
-    table_number: '',
-    timeBooking: '',
-    food_name: '',
+    FullName: '',
+    phoneNumber: '',
     quantity: '',
-    customer_name: ''
+    timeBooking: ''
 });
+
+const bookingHistory = ref([]);
+
+const formatDateTime = (datetime) => {
+    const date = new Date(datetime);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = '00';
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
 const createBooking = () => {
-    api.post("/admin/bookings/create", form)
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        alert("Bạn cần đăng nhập để thực hiện chức năng này.");
+        router.push({ name: 'login' });
+        return;
+    }
+
+    // Kiểm tra form trước khi gửi
+    errors.value = {};
+    if (!form.FullName || !form.phoneNumber || !form.quantity || !form.timeBooking) {
+        errors.value = { message: 'Vui lòng kiểm tra lại thông tin.' };
+        return;
+    }
+
+    const payload = {
+        ...form,
+        timeBooking: formatDateTime(form.timeBooking)
+    };
+
+    api.post("/admin/bookings/create", payload)
         .then((response) => {
-            
-            if (response.status == 201) { // http code khi tạo thành công là 201, nào mà update, delete... thành công mới dùng 200
+            if (response.status === 201) {
                 alert('Đặt bàn thành công!');
+                bookingHistory.value.push(response.data);
+                router.push({ name: 'users-home' }); // chuyển về trang Home
             }
         })
-        .catch((error) => { 
-            console.log('error', error)
-            // errors.value = error.response.data.errors;
-        })
-}
+        .catch((error) => {
+            console.log('Lỗi khi đặt bàn:', error);
+            errors.value = error.response?.data?.errors || { message: 'Đã xảy ra lỗi khi đặt bàn.' };
+        });
+};
 </script>
 
 <style scoped>

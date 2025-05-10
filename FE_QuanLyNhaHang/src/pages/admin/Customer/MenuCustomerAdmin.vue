@@ -9,7 +9,7 @@
           <tr class="border-2 border-gray-300">
             <th>
               <div class="flex flex-row justify-center items-center gap-2">
-                <Sort @sort="(direction) => sortBy('FullName', direction)" />
+                <Sort @sort="(key) => sortBy('FullName', key)" />
                 <p class="text-start w-full">Họ tên</p>
               </div>
             </th>
@@ -21,6 +21,7 @@
             </th>
             <th>
               <div class="flex flex-row justify-center items-center gap-2">
+                <Sort @sort="(direction) => sortBy('point', direction)" />
                 <p>Ranking</p>
               </div>
             </th>
@@ -53,11 +54,11 @@
                   </svg>
                   <div
                     class="absolute hidden group-hover:flex z-10 right-0 bg-gray-200 border-2 border-gray-400 w-40 flex-col gap-2 rounded-lg p-2 items-start">
-                    <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDetailCustomers">
+                    <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDetail(item)">
                       Chi tiết
                     </p>
-                    <p class="hover:bg-gray-500 text-start w-full h-full">Chỉnh sửa</p>
-                    <p class="hover:bg-gray-500 text-start w-full h-full">Xoá</p>
+                    <p class="hover:bg-gray-500 text-start w-full h-full" @click="goEdit(item)">Chỉnh sửa</p>
+                    <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDelete(item)">Xoá</p>
                   </div>
                 </div>
               </div>
@@ -65,6 +66,7 @@
           </tr>
         </tbody>
       </table>
+      <ConfirmDelete v-if="showConfirm" @confirm="confirmDelete" @cancel="cancelDelete" />
       <Pagination :current-page="currentPage" :total-pages="totalPages" @page-changed="changePage" />
     </div>
   </div>
@@ -77,12 +79,18 @@ import { useRouter } from "vue-router";
 import Sort from "../../../components/Admin/SortButton.vue";
 import Search from "../../../components/Admin/Search.vue";
 import Pagination from "../../../components/Admin/Pagination.vue";
+import ConfirmDelete from "../../../components/Admin/ConfirmDelete.vue";
 
-const router = useRouter();
-const searchQuery = ref("");
-const sortKey = ref(""); // 'FullName' hoặc 'point'
-const sortDirection = ref(""); // 'asc' | 'desc'
-const allItems = ref([]);
+const router = useRouter()
+const searchQuery = ref('')
+const sortKey = ref('')
+const sortDirection = ref('')
+const showConfirm = ref(false)
+const itemToDelete = ref(null)
+const allItems = ref([])
+const itemsPerPage = 5
+const currentPage = ref(1)
+const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
 
 async function fetchCustomers() {
   try {
@@ -124,9 +132,6 @@ const filteredItems = computed(() => {
   return result;
 });
 
-const itemsPerPage = 5;
-const currentPage = ref(1);
-const totalPages = computed(() => Math.ceil(filteredItems.value.length / itemsPerPage));
 
 const paginatedItems = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
@@ -139,8 +144,49 @@ function changePage(page) {
     currentPage.value = page;
   }
 }
+function goDetail(item) {
+  router.push({
+    name: 'admin-detail-customers',
+    params: { id: item.id },
+    query: { data: JSON.stringify(item) }
+  })
+}
 
-function goDetailCustomers() {
-  router.push({ name: 'admin-details-customers' });
+function goEdit(item) {
+  router.push({
+    name: 'admin-edit-customers',
+    params: { id: item.id },
+    query: { data: JSON.stringify(item) }
+  })
+}
+
+function goDelete(item) {
+  itemToDelete.value = item
+  showConfirm.value = true
+}
+
+async function confirmDelete() {
+  if (!itemToDelete.value || !itemToDelete.value.id) {
+    console.error('Không có item hoặc ID để xoá')
+    showConfirm.value = false
+    return
+  }
+
+  try {
+    await axios.delete(`http://127.0.0.1:8000/api/admin/customers/${itemToDelete.value.id}`)
+    alert('Đã xoá thành công!')
+    allItems.value = allItems.value.filter(item => item.id !== itemToDelete.value.id)
+    itemToDelete.value = null
+    showConfirm.value = false
+  } catch (error) {
+    console.error('Lỗi khi xoá:', error)
+    alert('Không thể xoá.')
+    showConfirm.value = false
+  }
+}
+
+function cancelDelete() {
+  showConfirm.value = false
+  itemToDelete.value = null
 }
 </script>

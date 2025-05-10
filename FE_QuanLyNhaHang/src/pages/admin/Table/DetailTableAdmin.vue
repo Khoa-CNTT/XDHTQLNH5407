@@ -10,7 +10,7 @@
                         <div class="border flex flex-[2] flex-col p-2 gap-2">
                             <div class="flex flex-row w-full items-center px-5">
                                 <p>Tên bàn:</p>
-                                <p class="text-2xl flex-1 text-end">{{ tableData.name }} </p>
+                                <p class="text-2xl flex-1 text-end">{{ "Bàn " + tableData.number }} </p>
                             </div>
 
                             <div class="flex flex-row w-full items-center px-5">
@@ -25,14 +25,14 @@
                                     Đã được đặt
                                 </p>
                                 <p v-else class="bg-red-500 text-white px-2 text-end">
-                                    Bị đóng
+                                    Bị khoá
                                 </p>
                             </div>
                             <div class="flex flex-col w-full h-fit items-start px-5 mt-5">
                                 <p class="flex">Mã bàn:</p>
                                 <div class="flex flex-1 justify-center w-full">
                                     <img class="border border-black"
-                                        :src="`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(tableData.name)}`"
+                                        :src="`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(tableData.number)}`"
                                         alt="QR Code" />
                                 </div>
                             </div>
@@ -59,14 +59,16 @@
         </div>
     </div>
 </template>
+
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { ref } from 'vue'
-import ConfirmDelete from '../../../components/Admin/ConfirmDelete.vue';
+import axios from 'axios'
+import ConfirmDelete from '../../../components/Admin/ConfirmDelete.vue'
 
 const router = useRouter()
 const route = useRoute()
-const tableData = route.query.data ? JSON.parse(route.query.data) : null;
+const tableData = route.query.data ? JSON.parse(route.query.data) : null
 const showConfirm = ref(false)
 
 function goBack() {
@@ -77,11 +79,17 @@ function goDelete() {
     showConfirm.value = true
 }
 
-function confirmDelete() {
+async function confirmDelete() {
     showConfirm.value = false
 
-    console.log('Đã xác nhận xoá kiểu món ăn')
-    router.push({ name: 'admin-tables' })
+    try {
+        await axios.delete(`http://127.0.0.1:8000/api/admin/tables/${tableData.id}`)
+        alert('Đã xoá bàn thành công!')
+        router.push({ name: 'admin-tables' })
+    } catch (error) {
+        console.error('Lỗi khi xoá bàn:', error)
+        alert('Không thể xoá bàn.')
+    }
 }
 
 function cancelDelete() {
@@ -97,7 +105,6 @@ function goEdit(item) {
         query: {
             data: JSON.stringify(item)
         }
-    });
+    })
 }
-
 </script>

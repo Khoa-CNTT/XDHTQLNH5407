@@ -1,20 +1,41 @@
 <template>
   <div class="w-[calc(100vw-300px)] h-[calc(100vh-100px)] fixed z-0 mt-20 ms-[300px] flex flex-col p-2">
     <div class="h-full w-full flex flex-col font-bold">
-      <p class="uppercase text-2xl">Lịch sử đặt hàng</p>
+      <p class="uppercase text-2xl">Lịch sử đặt bàn</p>
       <div class="w-full h-full flex flex-col">
         <div class="w-full h-fit flex flex-row p-2">
           <div class="flex flex-row flex-1 gap-5">
-            <div class="">Tất cả</div>
-            <div class="">Hoàn thành</div>
-            <div class="">Bị huỷ</div>
-            <div class="">Đang sử dụng</div>
+            <div @click="showAll" :class="[
+              'hover:cursor-pointer hover:border-b-4 hover:text-red-500 hover:border-red-500',
+              statusFilter === null ? 'text-red-500 border-b-4 border-red-500' : '']">
+              Tất cả
+            </div>
+            <div @click="showSuccess" :class="[
+              'hover:cursor-pointer hover:border-b-4 hover:text-red-500 hover:border-red-500',
+              statusFilter === 2 ? 'text-red-500 border-b-4 border-red-500' : '']">
+              Hoàn thành
+            </div>
+            <div @click="showReject" :class="[
+              'hover:cursor-pointer hover:border-b-4 hover:text-red-500 hover:border-red-500',
+              statusFilter === 3 ? 'text-red-500 border-b-4 border-red-500' : '']">
+              Từ chối
+            </div>
+            <div @click="showCancel" :class="[
+              'hover:cursor-pointer hover:border-b-4 hover:text-red-500 hover:border-red-500',
+              statusFilter === 4 ? 'text-red-500 border-b-4 border-red-500' : '']">
+              Bị huỷ
+            </div>
+            <div @click="showWait" :class="[
+              'hover:cursor-pointer hover:border-b-4 hover:text-red-500 hover:border-red-500',
+              statusFilter === 1 ? 'text-red-500 border-b-4 border-red-500' : '']">
+              Đang chờ
+            </div>
           </div>
+
           <div class="flex flex-row flex-1 gap-2 justify-end items-center">
             <Search v-model="searchQuery" />
-            <input class="border border-gray-300" type="date" name="start_date" id="start_date" value="2025-04-18" />
-            <p>đến</p>
-            <input class="border border-gray-300" type="date" name="ebd_date" id="ebd_date" value="2025-04-19" />
+            <input class="border border-gray-300" type="time" v-model="selectedTime" />
+            <input class="border border-gray-300" type="date" v-model="selectedDate" />
           </div>
         </div>
         <div class="w-full h-fit border-t border-gray-400 px-2 pt-2">
@@ -27,31 +48,22 @@
                     <p class="text-start w-full">ID</p>
                   </div>
                 </th>
-
                 <th>
                   <div class="flex flex-row justify-center items-center gap-2">
                     <SortButton @sort="(direction) => sortBy('status', direction)" />
-
                     <p>Trạng thái</p>
                   </div>
                 </th>
                 <th>
                   <div class="flex flex-row justify-center items-center gap-2">
-                    <SortButton @sort="(direction) => sortBy('name', direction)" />
-                    <p>Bàn</p>
+                    <SortButton @sort="(direction) => sortBy('status', direction)" />
+                    <p>Người đặt</p>
                   </div>
                 </th>
                 <th>
                   <div class="flex flex-row justify-center items-center gap-2">
-                    <SortButton @sort="(direction) => sortBy('time_start', direction)" />
+                    <SortButton @sort="(direction) => sortBy('timeBooking', direction)" />
                     <p>Thời gian đặt</p>
-                  </div>
-                </th>
-                <th>
-                  <div class="flex flex-row justify-center items-center gap-2">
-                    <SortButton @sort="(direction) => sortBy('time_use', direction)" />
-
-                    <p>Thời gian sử dụng</p>
                   </div>
                 </th>
                 <th>
@@ -74,35 +86,33 @@
                 </td>
                 <td>
                   <div class="h-16 flex justify-center items-center">
-                    <p v-if="item.status === 1" class="bg-green-500 w-32 text-center p-2">
+                    <p v-if="item.status === 1" class="bg-yellow-500 w-32 text-center p-2">
+                      Đang chờ
+                    </p>
+                    <p v-else-if="item.status === 2" class="bg-green-500 w-32 text-center p-2">
                       Hoàn thành
                     </p>
-                    <p v-else-if="item.status === 2" class="bg-red-500 w-32 text-center p-2">
+                    <p v-else-if="item.status === 3" class="bg-red-500 w-32 text-center p-2">
+                      Từ chối
+                    </p>
+                    <p v-else-if="item.status === 4" class="bg-red-500 w-32 text-center p-2">
                       Bị huỷ
                     </p>
-                    <p v-else-if="item.status === 3" class="bg-yellow-500 w-32 text-center p-2">
-                      Đang sử dụng
-                    </p>
                   </div>
                 </td>
                 <td>
                   <div class="h-16 flex justify-center items-center px-2">
-                    <p>{{ item.name }}</p>
+                    <p>{{ item.customer.FullName }}</p>
                   </div>
                 </td>
                 <td>
                   <div class="h-16 flex justify-center items-center px-2">
-                    <p>{{ item.time_start }}</p>
+                    <p>{{ item.timeBooking }}</p>
                   </div>
                 </td>
                 <td>
-                  <div class="h-16 flex justify-center items-center px-2">
-                    <p>{{ item.time_use }}</p>
-                  </div>
-                </td>
-                <td>
-                  <div class="h-16 flex justify-center items-center px-2">
-                    <p>{{ item.total.toLocaleString() }}</p>
+                  <div class="h-16 flex justify-center items-center px-2 gap-1">
+                    <p>{{ calculateTotal(item.booking_foods).toLocaleString() }}</p>
                     <p>VNĐ</p>
                   </div>
                 </td>
@@ -117,13 +127,9 @@
                       </svg>
                       <div
                         class="absolute hidden group-hover:flex z-10 right-0 bg-gray-200 border-2 border-gray-400 w-40 flex-col gap-2 rounded-lg p-2 items-start">
-                        <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDetailBooking">
+                        <p class="hover:bg-gray-500 text-start w-full h-full" @click="goDetail(item)">
                           Chi tiết
                         </p>
-                        <p class="hover:bg-gray-500 text-start w-full h-full">
-                          Chỉnh sửa
-                        </p>
-                        <p class="hover:bg-gray-500 text-start w-full h-full">Xoá</p>
                       </div>
                     </div>
                   </div>
@@ -139,160 +145,110 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 import Search from "../../../components/Admin/Search.vue";
 import SortButton from "../../../components/Admin/SortButton.vue";
 import Pagination from "../../../components/Admin/Pagination.vue";
 
+const statusFilter = ref(null); // null = tất cả
 const router = useRouter();
 const searchQuery = ref("");
-const sortKey = ref(""); // 'name' hoặc 'qty'
-const sortDirection = ref(""); // 'asc' | 'desc'
+const sortKey = ref("");
+const sortDirection = ref("");
+const selectedDate = ref("");
+const selectedTime = ref("");
+
 
 function sortBy(key, direction) {
   sortKey.value = key;
   sortDirection.value = direction;
 }
 
+const allItems = ref([]);
+
 const filteredItems = computed(() => {
   let result = [...allItems.value];
 
-  // Lọc theo search nếu có
+  if (statusFilter.value !== null) {
+    result = result.filter((item) => item.status === statusFilter.value);
+  }
+
   if (searchQuery.value) {
     result = result.filter((item) =>
-      item.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+      item.customer.FullName.toLowerCase().includes(searchQuery.value.toLowerCase())
     );
   }
 
-  // Sắp xếp nếu có key và direction
+
+  // Lọc theo ngày
+  if (selectedDate.value) {
+    result = result.filter((item) => {
+      const bookingDate = new Date(item.timeBooking).toISOString().split("T")[0];
+      return bookingDate === selectedDate.value;
+    });
+  }
+
+  // Lọc theo giờ
+  if (selectedTime.value) {
+    result = result.filter((item) => {
+      const bookingTime = new Date(item.timeBooking).toTimeString().slice(0, 5); // hh:mm
+      return bookingTime === selectedTime.value;
+    });
+  }
+
   if (sortKey.value && sortDirection.value) {
     result.sort((a, b) => {
-      if (sortDirection.value === "asc") {
-        return a[sortKey.value] > b[sortKey.value] ? 1 : -1;
-      } else {
-        return a[sortKey.value] < b[sortKey.value] ? 1 : -1;
+      let aValue = a[sortKey.value];
+      let bValue = b[sortKey.value];
+
+      if (sortKey.value === "customer") {
+        aValue = a.customer.FullName;
+        bValue = b.customer.FullName;
+      } else if (sortKey.value === "total") {
+        aValue = calculateTotal(a.booking_foods);
+        bValue = calculateTotal(b.booking_foods);
       }
+
+      return sortDirection.value === "asc"
+        ? aValue > bValue ? 1 : -1
+        : aValue < bValue ? 1 : -1;
     });
   }
 
   return result;
 });
 
-const allItems = ref([
-  {
-    id: "1",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 1",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "2",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 2",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "3",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 3",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "4",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 4",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "5",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 5",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "6",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 6",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "7",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 7",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "8",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 8",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "8",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 8",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "8",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 8",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "8",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 8",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "8",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 8",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "8",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 8",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-  {
-    id: "8",
-    status: Math.floor(Math.random() * 3) + 1,
-    name: "bàn 8",
-    time_start: "",
-    time_use: "",
-    total: (Math.floor(Math.random() * 10000) + 1) * 1000,
-  },
-]);
+
+function showAll() {
+  statusFilter.value = null;
+  currentPage.value = 1;
+}
+function showSuccess() {
+  statusFilter.value = 2;
+  currentPage.value = 1;
+}
+function showReject() {
+  statusFilter.value = 3;
+  currentPage.value = 1;
+}
+function showCancel() {
+  statusFilter.value = 4;
+  currentPage.value = 1;
+}
+function showWait() {
+  statusFilter.value = 1;
+  currentPage.value = 1;
+}
+
+
+// Calculate total cost from booking_foods
+function calculateTotal(bookingFoods) {
+  return bookingFoods.reduce((total, foodItem) => {
+    return ((total + (foodItem.quantity * foodItem.food.cost)) * 0.3) + 50000;
+  }, 50000);
+}
 
 const itemsPerPage = 8;
 const currentPage = ref(1);
@@ -305,13 +261,28 @@ const paginatedItems = computed(() => {
   return filteredItems.value.slice(start, end);
 });
 
+async function fetchBooking() {
+  try {
+    const response = await axios.get("http://127.0.0.1:8000/api/admin/bookings");
+    allItems.value = response.data.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy dữ liệu đặt bàn:", error);
+  }
+}
+
+onMounted(fetchBooking);
+
 function changePage(page) {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
   }
 }
 
-function goDetailBooking() {
-  router.push({ name: 'admin-details-booking' })
+function goDetail(item) {
+  router.push({
+    name: 'admin-detail-booking',
+    params: { id: item.id },
+    query: { data: JSON.stringify(item) }
+  })
 }
 </script>
