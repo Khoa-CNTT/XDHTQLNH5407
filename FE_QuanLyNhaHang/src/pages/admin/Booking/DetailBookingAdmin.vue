@@ -58,11 +58,7 @@
                                 <div class="flex flex-row items-center gap-3 w-full">
                                     <img class="w-20 h-20 rounded-full object-cover" :src="bookingData?.customer.image"
                                         :alt="bookingData?.customer.FullName" />
-                                    <div class="flex flex-col gap-2 font-bold">
-                                        <p>{{ bookingData?.customer.FullName }}</p>
-                                        <p class="text-red-500">{{ bookingData?.customer.phoneNumber }}</p>
-                                    </div>
-
+                                    <p>{{ bookingData?.customer.FullName }}</p>
                                 </div>
                             </div>
 
@@ -160,7 +156,6 @@ function getStatusText(status) {
     }
 }
 
-
 // Calculate food deposit (30% of food total)
 function calculateFoodDeposit(bookingFoods) {
     if (!bookingFoods || !bookingFoods.length) return 0;
@@ -181,6 +176,7 @@ async function acceptBooking() {
     try {
         await axios.put(`http://127.0.0.1:8000/api/admin/bookings/${bookingData.id}`, {
             status: 2, // Thành công
+            phoneNumber: bookingData?.customer.phoneNumber // nếu API yêu cầu số điện thoại xác thực
         });
         alert('Đã chấp nhận đặt bàn!');
         router.push({ name: 'admin-booking' });
@@ -194,6 +190,7 @@ async function rejectBooking() {
     try {
         await axios.put(`http://127.0.0.1:8000/api/admin/bookings/${bookingData.id}`, {
             status: 3, // Từ chối
+            phoneNumber: bookingData?.customer.phoneNumber
         });
         alert('Đã từ chối đặt bàn!');
         router.push({ name: 'admin-booking' });

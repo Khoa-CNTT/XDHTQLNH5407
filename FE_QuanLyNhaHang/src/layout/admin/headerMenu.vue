@@ -20,7 +20,7 @@
                 </div>
             </div>
             <div class="flex h-full bg-gray-200 justify-center items-center relative rounded-2xl me-20 p-5 hover:cursor-pointer hover:bg-gray-500"
-                @click="goBill">
+                @click="goInvoice">
                 <div class="flex flex-row justify-center items-center text-2xl">
                     <svg class="w-10 h-10 text-gray-800" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                         fill="none" viewBox="0 0 24 24">
@@ -31,7 +31,7 @@
                 </div>
                 <div
                     class="absolute -right-5 -top-2 h-10 w-10 bg-red-600 flex justify-center items-center rounded-full font-bold text-2xl text-white">
-                    <p>{{ totalBill }}</p>
+                    <p>{{ totalInvoice }}</p>
                 </div>
             </div>
 
@@ -44,12 +44,12 @@
             </div>
         </div>
     </div>
+
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { ref, computed } from 'vue'
-import { onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 
 const router = useRouter()
@@ -63,47 +63,57 @@ const user = ref(
         status_user: 'inactive',
         image: null,
     }
-);
-const allItemsBill = ref([])
+)
+
+const allItemsInvoice = ref([])
 const allItemsBooking = ref([])
 
-const totalBooking = computed(() => allItemsBooking.value.length)
-const totalBill = computed(() => allItemsBill.value.length)
+const totalInvoice = computed(() =>
+    allItemsInvoice.value.filter(item => item.status === 1).length
+)
 
-async function fetchBill() {
+const totalBooking = computed(() =>
+    allItemsBooking.value.filter(item => item.status === 1).length
+)
+
+async function fetchInvoice() {
     try {
-        const response = await axios.get("http://127.0.0.1:8000/api/admin/invoices");
-        allItemsBill.value = response.data.data; // Sửa đúng biến
+        const response = await axios.get("http://127.0.0.1:8000/api/admin/invoices")
+        console.log('Invoice API response:', response.data)
+        const invoiceData = response.data.data
+        allItemsInvoice.value = Array.isArray(invoiceData) ? invoiceData : []
     } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu hóa đơn:", error);
+        console.error("Lỗi khi lấy dữ liệu hóa đơn:", error)
+        allItemsInvoice.value = []
     }
 }
 
 async function fetchBooking() {
     try {
-        const response = await axios.get("http://127.0.0.1:8000/api/admin/bookings");
-        allItemsBooking.value = response.data.data; // Sửa đúng biến
+        const response = await axios.get("http://127.0.0.1:8000/api/admin/bookings")
+        console.log('Booking API response:', response.data)
+        allItemsBooking.value = Array.isArray(response.data.data) ? response.data.data : []
     } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu đặt bàn:", error);
+        console.error("Lỗi khi lấy dữ liệu đặt bàn:", error)
+        allItemsBooking.value = []
     }
 }
 
-
-
 onMounted(() => {
-    fetchBill();
-    fetchBooking();
-});
+    fetchInvoice()
+    fetchBooking()
+})
 
 function goHome() {
-    router.push('/admin')
+    router.push({ name: 'home' })
 }
 
 function goBooking() {
-    router.push('/admin/booking')
+    router.push({ name: 'admin-booking' })
 }
-function goBill() {
-    router.push('/admin/bill')
+
+function goInvoice() {
+    router.push({ name: 'admin-invoice' })
 }
 
 function goProfile() {

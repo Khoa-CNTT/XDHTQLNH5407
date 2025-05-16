@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const getHeader = () => {
-  let token = window.localStorage.getItem("token");
+  let token = window.localStorage.getItem("auth_token");
+
   if (token == null) {
     return {};
   }

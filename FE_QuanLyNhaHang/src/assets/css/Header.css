@@ -10,8 +10,7 @@ body {
   .menu li.introduce:hover{
     background-color: rgba(0, 0, 0, 0.1);
   }
-  .menu li a:hover {
-  }
+ 
   .menu li a{
     width: 100%;
     display: block; /* hoặc inline-block nếu muốn giữ trên 1 dòng */
@@ -61,7 +60,8 @@ body {
     position: absolute;
     background: #C0C0C0;
     margin-right: 300px;
-    width: 800px;
+    width: 400px;
+    height: auto;
     transform: translateX(-20%);
     margin-top: 16px;
   }
@@ -76,9 +76,9 @@ body {
     width: 30%;
     display: flex;
     justify-content: center;
-    height: 250px;
-    margin-top: 60px;
+    height: auto;
     padding-right: 30px;
+    align-items: center;
   }
   
   .menu-image img {

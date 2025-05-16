@@ -34,7 +34,8 @@
 
           <div class="flex flex-row flex-1 gap-2 justify-end items-center">
             <Search v-model="searchQuery" />
-            <input class="border border-gray-300" type="time" v-model="selectedTime" />
+            <input class="border border-gray-300 w-12 no-spinner text-center" type="number" min="0" max="23"
+              placeholder="Time" @input="validateTime" v-model="selectedTime" />
             <input class="border border-gray-300" type="date" v-model="selectedDate" />
           </div>
         </div>
@@ -92,10 +93,10 @@
                     <p v-else-if="item.status === 2" class="bg-green-500 w-32 text-center p-2">
                       Hoàn thành
                     </p>
-                    <p v-else-if="item.status === 3" class="bg-red-500 w-32 text-center p-2">
+                    <p v-else-if="item.status === 3" class="bg-gray-500 w-32 text-center p-2 text-white">
                       Từ chối
                     </p>
-                    <p v-else-if="item.status === 4" class="bg-red-500 w-32 text-center p-2">
+                    <p v-else-if="item.status === 4" class="bg-red-500 w-32 text-center p-2 text-white">
                       Bị huỷ
                     </p>
                   </div>
@@ -166,6 +167,18 @@ function sortBy(key, direction) {
   sortDirection.value = direction;
 }
 
+function validateTime(e) {
+  let val = parseInt(e.target.value);
+  if (isNaN(val)) {
+    selectedTime.value = "";
+    return;
+  }
+  if (val < 0) val = 0;
+  if (val > 23) val = 23;
+  selectedTime.value = val.toString();
+}
+
+
 const allItems = ref([]);
 
 const filteredItems = computed(() => {
@@ -181,7 +194,6 @@ const filteredItems = computed(() => {
     );
   }
 
-
   // Lọc theo ngày
   if (selectedDate.value) {
     result = result.filter((item) => {
@@ -191,10 +203,10 @@ const filteredItems = computed(() => {
   }
 
   // Lọc theo giờ
-  if (selectedTime.value) {
+  if (selectedTime.value !== "") {
     result = result.filter((item) => {
-      const bookingTime = new Date(item.timeBooking).toTimeString().slice(0, 5); // hh:mm
-      return bookingTime === selectedTime.value;
+      const bookingHour = new Date(item.timeBooking).getHours();
+      return bookingHour === parseInt(selectedTime.value);
     });
   }
 
@@ -242,8 +254,6 @@ function showWait() {
   currentPage.value = 1;
 }
 
-
-// Calculate total cost from booking_foods
 function calculateTotal(bookingFoods) {
   return bookingFoods.reduce((total, foodItem) => {
     return ((total + (foodItem.quantity * foodItem.food.cost)) * 0.3) + 50000;
@@ -286,3 +296,11 @@ function goDetail(item) {
   })
 }
 </script>
+
+<style scoped>
+.no-spinner::-webkit-inner-spin-button,
+.no-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+</style>

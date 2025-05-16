@@ -48,9 +48,10 @@
                             </p>
                             <p v-else-if="item.status === 2" class="bg-yellow-500 w-44 text-center p-2 rounded-md">Đang
                                 sử dụng</p>
-                            <p v-else-if="item.status === 3" class="bg-red-500 w-44 text-center p-2 rounded-md">Đã đặt
+                            <p v-else-if="item.status === 3" class="bg-red-500 w-44 text-center p-2 rounded-md">Đã được
+                                đặt
                             </p>
-                            <p v-else class="bg-gray-500 w-44 text-center p-2 rounded-md">Bị khoá</p>
+                            <p v-else class="bg-red-500 w-44 text-center p-2 rounded-md">Bị khoá</p>
                         </td>
 
                         <td class="text-center">{{ item.time }}</td>

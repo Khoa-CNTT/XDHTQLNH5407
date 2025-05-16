@@ -87,7 +87,6 @@ async function goSave() {
 function goBack() {
     router.push({ name: 'admin-tables' })
 }
-
 function goDelete() {
     showConfirm.value = true
 }
@@ -97,11 +96,11 @@ async function confirmDelete() {
 
     try {
         await axios.delete(`http://127.0.0.1:8000/api/admin/tables/${tableData.id}`)
-        alert('Đã xoá thành công!')
+        alert('Đã xoá bàn thành công!')
         router.push({ name: 'admin-tables' })
     } catch (error) {
-        console.error('Lỗi khi xoá:', error)
-        alert('Không thể xoá.')
+        console.error('Lỗi khi xoá bàn:', error)
+        alert('Không thể xoá bàn.')
     }
 }
 

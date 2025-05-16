@@ -79,49 +79,67 @@
               </div>
 
               <div v-else-if="tab.ten === 'Thông tin cá nhân'">
-                <div class="information-personal">
-                  <div class="input-information">
-                    <div class="row-information">
-                      <div class="group-information">
-                        Họ và tên
-                        <i class="fa fa-user"></i>
-                        <input type="text" v-model="informationpersonal.hoTen" />
-                      </div>
-                      <div class="group-information">
-                        Ngày sinh
-                        <input type="date" v-model="informationpersonal.ngaySinh"  />
-                      </div>
-                    </div>
+  <div class="information-personal">
+    <div class="input-information">
+      <div class="row-information">
+        <div class="group-information">
+          Họ và tên
+          <i class="fa fa-user"></i>
+          <input type="text" v-model="informationpersonal.FullName" />
+        </div>
+        <div class="group-information">
+          Ngày sinh 
+          <input type="date" v-model="informationpersonal.birth" />
+        </div>
+      </div>
 
-                    <div class="row-information">
-                      <div class="group-information">
-                        Số điện thoại
-                        <i class="fa fa-phone"></i>
-                        <input type="number"   v-model="informationpersonal.soDienThoai"/>
-                      </div>
-                      <div class="group-information">
-                        Email
-                        <i class="fa fa-envelope"></i>
-                        <input type="email"  v-model="informationpersonal.email"/>
-                      </div>
-                    </div>
+      <div class="row-information">
+        <div class="group-information">
+          Số điện thoại
+          <i class="fa fa-phone"></i>
+          <input type="number" v-model="informationpersonal.phoneNumber" />
+        </div>
+        <div class="group-information">
+          Email
+          <i class="fa fa-envelope"></i>
+          <input type="email" v-model="informationpersonal.mail" />
+        </div>
+      </div>
 
-                    <div class="row-information">
-                      <div class="group-radio">
-                        <input type="radio" name="gender" id="male"  value="Nam" v-model="informationpersonal.gioiTinh" />
-                        <label for="male">Nam</label>
-                        <input type="radio" name="gender" id="female" value="Nữ" v-model="informationpersonal.gioiTinh" />
-                        <label for="female">Nữ</label>
-                      </div>
-                      <div style="margin-left: 318px;" class="group-information">
-                        Địa chỉ
-                        <i class="fa fa-map-marker"></i>
-                        <input type="text"  v-model="informationpersonal.diaChi"/>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+      <div class="row-information">
+        <div class="group-information">
+          Mật khẩu
+          <i class="fa fa-lock"></i>
+          <input type="password" v-model="informationpersonal.password" />
+        </div>
+        <div class="group-information">
+          Ảnh đại diện
+          <input type="file" @change="handleImageUpload" accept="image/*" />
+          <img v-if="imagePreview" :src="imagePreview" alt="Ảnh preview" style="width: 80px; margin-top: 5px;" />
+        </div>
+      </div>
+
+      <div class="row-information">
+        <div class="group-information">
+          Điểm
+          <input type="number" v-model="informationpersonal.point" disabled />
+        </div>
+        <div class="group-information">
+          Hạng
+          <input type="number" v-model="informationpersonal.id_rank" disabled />
+        </div>
+      
+      </div>
+    </div>
+  </div>
+  <!-- Thêm vào cuối phần Thông tin cá nhân -->
+<div style="margin-top: 20px; text-align: right;">
+  <button @click="updatePersonalInfo" class="btn-update">Cập nhật thông tin</button>
+</div>
+
+</div>
+
+
 
               <div v-else-if="tab.ten === 'Quà tặng'">
   <div v-if="tab.danhSachQuaTang.length === 0">
@@ -153,17 +171,81 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref ,onMounted} from 'vue'
 import { Codemirror } from 'vue-codemirror'
+import api from '../../services/api'
+
+
 import { javascript } from '@codemirror/lang-javascript'
+
 const informationpersonal = ref({
-  hoTen: 'Trần Văn Khánh',
-  ngaySinh: '2003-12-23',
-  soDienThoai: '0912345678',
-  email: 'leminhtri@example.com',
-  gioiTinh: 'Nam',
-  diaChi: '123 Nguyễn Văn Linh, Đà Nẵng',
-});
+  FullName: '',
+  phoneNumber: '',
+  mail: '',
+  birth: '',
+  image: '',
+  password: '',
+  point: 0,
+  id_rank: 1,
+  isActive: false,
+})
+
+const imagePreview = ref(null)
+
+onMounted(() => {
+  const id = localStorage.getItem('customerId')
+  if (id) {
+    api.get(`/client/customers/${id}`)
+      .then((res) => {
+        informationpersonal.value = {
+          ...res.data.customer,
+          password: localStorage.getItem('customer_password') || '', 
+        }
+      })
+      .catch((err) => {
+        console.error('Lỗi khi lấy thông tin người dùng:', err)
+      })
+  }
+
+  // Gán lại email và password từ localStorage 
+  informationpersonal.value.mail = localStorage.getItem('customer_email') || ''
+  informationpersonal.value.password = localStorage.getItem('customer_password') || ''
+})
+
+const handleImageUpload = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    imagePreview.value = e.target.result
+    informationpersonal.value.image = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+const updatePersonalInfo = () => {
+  const id = localStorage.getItem('customerId')
+  if (!id) return alert('Không tìm thấy ID người dùng')
+
+  // Tạo payload (có thể lọc thuộc tính nếu muốn gửi ít hơn)
+  const payload = {
+    FullName: informationpersonal.value.FullName,
+    phoneNumber: informationpersonal.value.phoneNumber,
+    mail: informationpersonal.value.mail,
+    birth: informationpersonal.value.birth,
+    image: informationpersonal.value.image,
+    password: informationpersonal.value.password,
+  }
+
+  api.put(`/client/customers/update/${id}`, payload)
+    .then(() => {
+      alert('Cập nhật thông tin thành công')
+    })
+    .catch((err) => {
+      console.error('Lỗi khi cập nhật thông tin:', err)
+      alert('Có lỗi xảy ra khi cập nhật')
+    })
+}
+
 
 const tabs = ref([
   {
@@ -538,6 +620,18 @@ border-radius: 20px;
       box-shadow: 0 0 0 0 rgba(250, 229, 113, 0);
     }
   }
- 
+  .btn-update {
+  padding: 8px 16px;
+  background-color: #00b894;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-update:hover {
+  background-color: #019875;
+}
+
   </style>
   

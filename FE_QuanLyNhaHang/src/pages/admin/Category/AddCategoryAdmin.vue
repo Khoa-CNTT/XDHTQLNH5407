@@ -1,24 +1,21 @@
 <template>
     <div class="w-[calc(100vw-300px)] h-[calc(100vh-100px)] fixed z-0 mt-20 ms-[300px] flex flex-col p-4">
         <div class="h-full w-full flex flex-col font-semibold gap-4 overflow-y-auto">
-            <!-- Tiêu đề -->
-            <div class="uppercase font-bold text-3xl text-gray-800">Thêm loại</div>
+            <div class="uppercase font-bold text-3xl text-gray-800">Thêm loại món ăn</div>
 
-            <!-- Form chỉnh sửa -->
             <div class="w-full max-w-5xl bg-white rounded-lg shadow-md p-6 border space-y-2">
                 <!-- Tên loại -->
                 <div class="flex items-center gap-4">
                     <label class="w-32">Tên loại:</label>
-                    <input type="text" id="name-category" v-model="form.name"
-                        class="flex-1 border rounded px-4 py-2 text-lg"
-                        :placeholder="categoryData?.name || 'Nhập tên loại...'" />
+                    <input type="text" v-model="form.name" class="flex-1 border rounded px-4 py-2 text-lg"
+                        placeholder="Nhập tên loại..." />
                 </div>
 
                 <!-- Kiểu món ăn -->
                 <div class="flex items-center gap-4">
                     <label class="w-32">Kiểu món ăn:</label>
                     <select v-model="form.id_type" class="border rounded px-4 py-2 w-[200px]">
-                        <option v-for="type in allItems" :key="type.id" :value="type.id">
+                        <option v-for="type in allItemsTypes" :key="type.id" :value="type.id">
                             {{ type.name }}
                         </option>
                     </select>
@@ -32,29 +29,37 @@
 
                 <!-- Danh sách món ăn -->
                 <div class="grid grid-cols-2 gap-4">
-                    <!-- Đã thêm -->
+                    <!-- Món đã thêm -->
                     <div class="border rounded p-4 flex flex-col max-h-[350px]">
                         <p class="font-bold text-lg mb-2 text-green-600">🍽 Món đã thêm</p>
                         <div class="overflow-y-auto space-y-2 max-h-[300px]">
-                            <div v-for="i in 6" :key="'added-' + i"
-                                class="flex items-center gap-4 p-2 border rounded hover:bg-gray-100">
-                                <img class="w-12 h-16 object-cover rounded" src="/picture/food/food 1.png" alt="">
-                                <span class="flex-1">Hamberger thịt nướng bơ tỏi xả hấp các thứ</span>
-                                <button class="text-red-500 hover:text-red-700 font-bold">Gỡ</button>
+                            <div v-if="addedFoods.length > 0">
+                                <div v-for="item in addedFoods" :key="item.id"
+                                    class="flex items-center gap-4 p-2 border rounded hover:bg-gray-100">
+                                    <img class="w-12 h-16 object-cover rounded" :src="item.image" :alt="item.name" />
+                                    <span class="flex-1">{{ item.name }}</span>
+                                    <button class="text-red-500 hover:text-red-700 font-bold"
+                                        @click="removeFood(item.id)">Gỡ</button>
+                                </div>
                             </div>
+                            <div v-else class="text-gray-500 italic">Chưa có món nào được thêm.</div>
                         </div>
                     </div>
 
-                    <!-- Chưa thêm -->
+                    <!-- Món chưa thêm -->
                     <div class="border rounded p-4 flex flex-col max-h-[350px]">
                         <p class="font-bold text-lg mb-2 text-blue-600">➕ Món chưa thêm</p>
                         <div class="overflow-y-auto space-y-2 max-h-[300px]">
-                            <div v-for="i in 10" :key="'not-added-' + i"
-                                class="flex items-center gap-4 p-2 border rounded hover:bg-gray-100">
-                                <img class="w-12 h-16 object-cover rounded" src="/picture/food/food 1.png" alt="">
-                                <span class="flex-1">Cơm gà lá chanh sốt mắm gừng</span>
-                                <button class="text-green-500 hover:text-green-700 font-bold">Thêm</button>
+                            <div v-if="notAddedFoods.length > 0">
+                                <div v-for="item in notAddedFoods" :key="item.id"
+                                    class="flex items-center gap-4 p-2 border rounded hover:bg-gray-100">
+                                    <img class="w-12 h-16 object-cover rounded" :src="item.image" :alt="item.name" />
+                                    <span class="flex-1">{{ item.name }}</span>
+                                    <button class="text-green-500 hover:text-green-700 font-bold"
+                                        @click="addFood(item.id)">Thêm</button>
+                                </div>
                             </div>
+                            <div v-else class="text-gray-500 italic">Tất cả món đã được thêm.</div>
                         </div>
                     </div>
                 </div>
@@ -71,59 +76,85 @@
 </template>
 
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-import { onMounted, ref } from 'vue'
-import SwitchButton from '../../../components/Admin/SwitchButton.vue'
+import { useRouter } from 'vue-router';
+import { ref, onMounted, computed, watch } from 'vue';
+import axios from 'axios';
+import SwitchButton from '../../../components/Admin/SwitchButton.vue';
 
-const allItems = ref([])
-const router = useRouter()
-const route = useRoute()
-
+const router = useRouter();
 const form = ref({
     name: '',
+    id_type: '',
     status: 1,
-    id_type: ''
-})
+    foods: []
+});
+
+const allItemsTypes = ref([]);
+const allFoods = ref([]);
+
+// Computed
+const addedFoods = computed(() => {
+    return allFoods.value.filter(food => form.value.foods.includes(food.id));
+});
+
+const notAddedFoods = computed(() => {
+    return allFoods.value.filter(food => {
+        const sameType = !form.value.id_type || food.id_type === form.value.id_type;
+        const notAdded = !form.value.foods.includes(food.id);
+        return sameType && notAdded;
+    });
+});
+
+// Watch type to filter invalid foods
+watch(() => form.value.id_type, (newVal) => {
+    form.value.foods = form.value.foods.filter(foodId => {
+        const matched = allFoods.value.find(f => f.id === foodId);
+        return matched && matched.id_type === newVal;
+    });
+});
+
+// Actions
+function addFood(id) {
+    if (!form.value.foods.includes(id)) {
+        form.value.foods.push(id);
+    }
+}
+
+function removeFood(id) {
+    form.value.foods = form.value.foods.filter(fId => fId !== id);
+}
 
 async function goSave() {
     try {
         const payload = {
-            id_type: form.value.id_type,
             name: form.value.name,
-            status: form.value.status
-        }
-
-        console.log('payload', payload);
-
-        const res = await axios.post('http://127.0.0.1:8000/api/admin/categories/create', payload)
-
-        alert('Đã thêm loại món ăn thành công!')
-
-        router.push({ name: 'admin-categories' })
+            id_type: form.value.id_type,
+            status: form.value.status,
+            food_ids: form.value.foods
+        };
+        await axios.post('http://127.0.0.1:8000/api/admin/categories/create', payload);
+        alert('Thêm loại thành công!');
+        router.push({ name: 'admin-categories' });
     } catch (error) {
-        console.error('Lỗi thêm loại món ăn:', error)
-        alert('Không thể thêm loại món ăn.')
+        console.error('Lỗi khi thêm loại:', error);
+        alert('Không thể thêm loại món ăn.');
     }
-}
-
-onMounted(async () => {
-    try {
-        const res = await axios.get('http://127.0.0.1:8000/api/admin/types')
-        if (res.data.status === 1) {
-            allItems.value = res.data.data
-        }
-    } catch (error) {
-        console.error('Lỗi khi tải danh sách kiểu món ăn:', error)
-    }
-})
-
-function toggleField(field) {
-    console.log("Toggled", field)
 }
 
 function goBack() {
-    router.push({ name: 'admin-categories' })
+    router.push({ name: 'admin-categories' });
 }
 
+// On mount
+onMounted(async () => {
+    try {
+        const resTypes = await axios.get('http://127.0.0.1:8000/api/admin/types');
+        allItemsTypes.value = resTypes.data.data;
+
+        const resFoods = await axios.get('http://127.0.0.1:8000/api/admin/foods');
+        allFoods.value = resFoods.data;
+    } catch (err) {
+        console.error('Lỗi khi tải dữ liệu:', err);
+    }
+});
 </script>

@@ -47,7 +47,9 @@
             </td>
 
             <td class="flex justify-center items-center w-full h-full">
-              <p class="w-60 text-center">{{ item.role }}</p>
+              <p v-if="item.role === 'admin'" class="w-60 text-center">Quản trị viên</p>
+              <p v-else-if="item.role === 'staff'" class="w-60 text-center">Nhân viên</p>
+              <p v-if="item.role === 'manager'" class="w-60 text-center">Quản lý</p>
             </td>
 
             <td class="text-center">

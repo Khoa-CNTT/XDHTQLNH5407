@@ -9,7 +9,7 @@ export default {
         modelValue: String,
         placeholder: {
             type: String,
-            default: 'search'
+            default: 'Search'
         }
     }
 }

@@ -9,8 +9,7 @@
                 <div class="w-full border h-fit flex flex-col">
                     <div class=" border flex flex-row">
                         <div class="flex flex-col flex-1 justify-center items-center">
-                            <img class="w-full h-full object-cover" :src="`/picture/rank/${rankData.image}`"
-                                alt="Ảnh rank" />
+                            <img class="w-full h-full object-cover" :src=rankData.image alt="Ảnh rank" />
                         </div>
 
                         <div class="border flex flex-[2] flex-col p-2 gap-1">

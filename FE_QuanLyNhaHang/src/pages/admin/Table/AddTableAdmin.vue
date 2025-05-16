@@ -50,16 +50,16 @@ import axios from 'axios'
 const router = useRouter()
 const route = useRoute()
 
-const form = ref({
-    number: '',
-    status: 1
-})
-
 function validateTable(e) {
     let val = parseInt(e.target.value)
     if (val < 0) val = 0
     form.value.number = val
 }
+
+const form = ref({
+    number: '',
+    status: 1
+})
 
 async function goSave() {
     try {

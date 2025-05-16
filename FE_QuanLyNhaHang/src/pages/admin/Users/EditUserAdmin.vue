@@ -101,7 +101,7 @@ const form = ref({
     role: userData?.role || '',
     phone_number: userData?.phone_number || '',
     email: userData?.email || '',
-    password: userData?.password || '',
+    // password: userData?.password || '',
     birth: userData?.birth || '',
     status: userData?.status || ''
 
@@ -124,7 +124,7 @@ async function goSave() {
             phone_number: form.value.phone_number,
             email: form.value.email,
             birth: form.value.birth,
-            password: form.value.password,
+            // password: form.value.password,
             // image: form.value.image
         });
 

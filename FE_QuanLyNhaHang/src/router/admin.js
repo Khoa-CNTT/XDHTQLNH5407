@@ -41,7 +41,7 @@ const admin = [
           {
             path: "edit/:id?",
             name: "admin-edit-foods",
-            component: () => import("../pages/admin/food/EditFoodAdmin.vue"),
+            component: () => import("../pages/admin/Food/EditFoodAdmin.vue"),
           },
         ],
       },
@@ -251,19 +251,27 @@ const admin = [
           },
         ],
       },
-      // Bill
+      // invoice
       {
-        path: "bill",
+        path: "invoice",
         children: [
           {
             path: "",
-            name: "admin-bill",
-            component: () => import("../pages/admin/Bills/MenuBillAdmin.vue"),
+            name: "admin-invoice",
+            component: () =>
+              import("../pages/admin/Invoice/MenuInvoiceAdmin.vue"),
           },
           {
-            path: "detail",
-            name: "admin-detail-bill",
-            component: () => import("../pages/admin/Bills/DetailBillAdmin.vue"),
+            path: "detail/:id?",
+            name: "admin-detail-invoice",
+            component: () =>
+              import("../pages/admin/Invoice/DetailInvoiceAdmin.vue"),
+          },
+          {
+            path: "edit/:id?",
+            name: "admin-edit-invoice",
+            component: () =>
+              import("../pages/admin/Invoice/EditInvoiceAdmin.vue"),
           },
         ],
       },

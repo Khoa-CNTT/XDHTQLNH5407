@@ -40,7 +40,7 @@
                                 <div class="overflow-hidden flex flex-row justify-center items-center">
                                     <img v-if="item.image"
                                         class="hover:cursor-pointer overflow-hidden object-cover h-32 w-24 rounded-lg shadow-md border"
-                                        :src="`/picture/rank/${item.image}`" alt="Ảnh rank" />
+                                        :src=item.image alt="Ảnh rank" />
                                     <p class="ps-5 hover:cursor-pointer">{{ item.nameRank }}</p>
                                 </div>
                             </div>
@@ -104,11 +104,19 @@ const allItems = ref([]);
 const fetchRank = async () => {
     try {
         const response = await axios.get("http://127.0.0.1:8000/api/admin/ranks");
-        allItems.value = response.data;
+
+        if (Array.isArray(response.data)) {
+            allItems.value = response.data;
+        } else if (response.data && Array.isArray(response.data.data)) {
+            allItems.value = response.data.data;
+        } else {
+            allItems.value = [];
+        }
     } catch (error) {
         console.error("Lỗi khi lấy dữ liệu:", error);
     }
-}
+};
+
 
 onMounted(() => {
     fetchRank()

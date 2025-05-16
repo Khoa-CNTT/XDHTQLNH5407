@@ -18,7 +18,9 @@
 
                             <div class="flex flex-row gap-2 items-center">
                                 <p>Chức vụ:</p>
-                                <p class="text-red-500">{{ userData.role }}</p>
+                                <p v-if="userData.role === 'admin'" class="text-red-500">Quản trị viên</p>
+                                <p v-else-if="userData.role === 'staff'" class="text-red-500">Nhân viên</p>
+                                <p v-if="userData.role === 'manager'" class="text-red-500">Quản lý</p>
                             </div>
 
                             <div class="flex flex-row gap-2 items-center">
